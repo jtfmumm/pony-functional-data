@@ -128,55 +128,48 @@ primitive ListT
     end
     (l1, l2)
 
-  fun drop[A](l: List[A], n: U64): List[A] =>
-    if (l.size() < n) then return List[A] end
+  fun drop[A: Any #read](l: List[A], n: U64): List[A] =>
+    if (l.size() < (n + 1)) then return List[A] end
 
     try
-      let res = _drop[A](l.head(), n)
-      List[A].append_node(res)
+      _drop[A](l.head(), n)
     else
       List[A]
     end
 
-  fun _drop[A](ln: ListNode[A], n: U64): ListNode[A] =>
+  fun _drop[A: Any #read](ln: ListNode[A], n: U64): List[A] =>
     var count = n
     var cur: ListNode[A] = ln
     while(count > 0) do
-      try cur = cur.next() as ListNode[A] end
+      try cur = cur.next() as ListNode[A] else return List[A] end
+      count = count - 1
     end
-    cur
+    let res = List[A]
+    try res.push(cur()) end
+    while (cur.has_next()) do
+      try
+        cur = cur.next() as ListNode[A]
+        res.push(cur())
+      end
+    end
+    res
 
-//    try
-//      _partition[A](l.head(), f)
-//    else
-//      (List[A], List[A])
-//    end
-//
-//  fun _partition[A](ln: ListNode[A], f: Fn1[A!,Bool]): (List[A], List[A]) =>
-//    let l1: List[A] = List[A]
-//    let l2: List[A] = List[A]
+  fun take[A: Any #read](l: List[A], n: U64): List[A] =>
+    if (l.size() <= n) then l end
 
+    try
+      _take[A](l.head(), n)
+    else
+      List[A]
+    end
 
-//  fun fold[A: Any #read,B: Any #read](acc: B): Fn2[List[A],Fn2[B!,A!,B^],B] =>
-//    object
-//      let b: B = acc
-//
-//      fun apply(l: List[A], f: Fn2[B!,A!,B^]): this->B =>
-//        try
-//          _fold(l.head(), f, b)
-//        else
-//          b
-//        end
-//
-//      fun _fold(ln: ListNode[A], f: Fn2[B!,A!,B^], acc: this->B!): B =>
-//        let nextAcc: B! = try f(acc, ln()) else acc end
-//
-//        try
-//          _fold[A,B](ln.next() as ListNode[A], f, nextAcc)
-//        else
-//          nextAcc
-//        end
-//    end
-
-
-
+  fun _take[A: Any #read](ln: ListNode[A], n: U64): List[A] =>
+    var count = n
+    let res = List[A]
+    var cur: ListNode[A] = ln
+    while(count > 0) do
+      try res.push(cur()) end
+      try cur = cur.next() as ListNode[A] else return res end
+      count = count - 1
+    end
+    res

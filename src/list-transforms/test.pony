@@ -15,9 +15,10 @@ actor Main is TestList
     test(_TestExists)
     test(_TestPartition)
     test(_TestDrop)
+    test(_TestTake)
 
 class iso _TestMap is UnitTest
-  fun name(): String => "map()"
+  fun name(): String => "list-transforms/map()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let a = List[U32]
@@ -33,7 +34,7 @@ class iso _TestMap is UnitTest
     true
 
 class iso _TestFlatMap is UnitTest
-  fun name(): String => "flatMap()"
+  fun name(): String => "list-transforms/flatMap()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let a = List[U32]
@@ -49,7 +50,7 @@ class iso _TestFlatMap is UnitTest
     true
 
 class iso _TestFlatten is UnitTest
-  fun name(): String => "flatten()"
+  fun name(): String => "list-transforms/flatten()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let a = List[List[U32]]
@@ -73,7 +74,7 @@ class iso _TestFlatten is UnitTest
     true
 
 class iso _TestFilter is UnitTest
-  fun name(): String => "filter()"
+  fun name(): String => "list-transforms/filter()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let a = List[U32]
@@ -89,7 +90,7 @@ class iso _TestFilter is UnitTest
     true
 
 class iso _TestFold is UnitTest
-  fun name(): String => "fold()"
+  fun name(): String => "list-transforms/fold()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let a = List[U32]
@@ -111,7 +112,7 @@ class iso _TestFold is UnitTest
     true
 
 class iso _TestEvery is UnitTest
-  fun name(): String => "every()"
+  fun name(): String => "list-transforms/every()"
 
   fun apply(h: TestHelper): TestResult =>
     let a = List[U32]
@@ -135,7 +136,7 @@ class iso _TestEvery is UnitTest
     true
 
 class iso _TestExists is UnitTest
-  fun name(): String => "exists()"
+  fun name(): String => "list-transforms/exists()"
 
   fun apply(h: TestHelper): TestResult =>
     let a = List[U32]
@@ -159,7 +160,7 @@ class iso _TestExists is UnitTest
     true
 
 class iso _TestPartition is UnitTest
-  fun name(): String => "partition()"
+  fun name(): String => "list-transforms/partition()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let a = List[U32]
@@ -181,26 +182,69 @@ class iso _TestPartition is UnitTest
 
     true
 
-
 class iso _TestDrop is UnitTest
-  fun name(): String => "drop()"
+  fun name(): String => "list-transforms/drop()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let a = List[U32]
-    a.push(0).push(1).push(2).push(3)
+    a.push(0).push(1).push(2).push(3).push(4)
 
-    let isEven = lambda(x: U32): Bool => x % 2 == 0 end
-    (let evens, let odds) = ListT.partition[U32](a, isEven)
+    let b = ListT.drop[U32](a, 2)
+    let c = ListT.drop[U32](a, 4)
+    let d = ListT.drop[U32](a, 5)
+    let e = ListT.drop[U32](a, 6)
 
-    try h.expect_eq[U32](evens(0), 0) else error end
-    try h.expect_eq[U32](evens(1), 2) else error end
-    try h.expect_eq[U32](odds(0), 1) else error end
-    try h.expect_eq[U32](odds(1), 3) else error end
+    h.expect_eq[U64](b.size(), 3)
+    try h.expect_eq[U32](b(0), 2) else error end
+    try h.expect_eq[U32](b(2), 4) else error end
+    h.expect_eq[U64](c.size(), 1)
+    try h.expect_eq[U32](c(0), 4) else error end
+    h.expect_eq[U64](d.size(), 0)
+    h.expect_eq[U64](e.size(), 0)
 
-    let b = List[U32]
-    (let emptyEvens, let emptyOdds) = ListT.partition[U32](b, isEven)
+    let empty = List[U32]
+    let l = ListT.drop[U32](empty, 3)
+    h.expect_eq[U64](l.size(), 0)
 
-    h.expect_eq[U64](emptyEvens.size(), 0)
-    h.expect_eq[U64](emptyOdds.size(), 0)
+    true
+
+class iso _TestTake is UnitTest
+  fun name(): String => "list-transforms/take()"
+
+  fun apply(h: TestHelper): TestResult ? =>
+    let a = List[U32]
+    a.push(0).push(1).push(2).push(3).push(4)
+
+    let b = ListT.take[U32](a, 2)
+    let c = ListT.take[U32](a, 4)
+    let d = ListT.take[U32](a, 5)
+    let e = ListT.take[U32](a, 6)
+    let m = ListT.take[U32](a, 0)
+
+    h.expect_eq[U64](b.size(), 2)
+    try h.expect_eq[U32](b(0), 0) else error end
+    try h.expect_eq[U32](b(1), 1) else error end
+    h.expect_eq[U64](c.size(), 4)
+    try h.expect_eq[U32](c(0), 0) else error end
+    try h.expect_eq[U32](c(1), 1) else error end
+    try h.expect_eq[U32](c(2), 2) else error end
+    try h.expect_eq[U32](c(3), 3) else error end
+    h.expect_eq[U64](d.size(), 5)
+    try h.expect_eq[U32](d(0), 0) else error end
+    try h.expect_eq[U32](d(1), 1) else error end
+    try h.expect_eq[U32](d(2), 2) else error end
+    try h.expect_eq[U32](d(3), 3) else error end
+    try h.expect_eq[U32](d(4), 4) else error end
+    h.expect_eq[U64](e.size(), 5)
+    try h.expect_eq[U32](e(0), 0) else error end
+    try h.expect_eq[U32](e(1), 1) else error end
+    try h.expect_eq[U32](e(2), 2) else error end
+    try h.expect_eq[U32](e(3), 3) else error end
+    try h.expect_eq[U32](e(4), 4) else error end
+    h.expect_eq[U64](m.size(), 0)
+
+    let empty = List[U32]
+    let l = ListT.take[U32](empty, 3)
+    h.expect_eq[U64](l.size(), 0)
 
     true
