@@ -12,6 +12,7 @@ trait val List[A: Any val]
   fun map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ ?
   fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ?
   fun filter(f: Fn1[A!, Bool]): List[A] ?
+  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
 
 //  fun string(): String
 
@@ -29,6 +30,7 @@ class val LNil[A: Any val] is List[A]
   fun map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ => recover val LNil[B] end
   fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ => recover val LNil[B] end
   fun filter(f: Fn1[A!, Bool]): List[A] => recover val LNil[A] end
+  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B => acc
   fun string(): String => "List()"
 
 class val LCons[A: Any val] is List[A]
@@ -81,6 +83,11 @@ class val LCons[A: Any val] is List[A]
     else
       _filter(l.tail(), f, acc)
     end
+  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ? =>
+    _fold[B](this.tail(), f, f(acc, this.head()))
+  fun _fold[B: Any val](l: List[A], f: Fn2[B!,A!,B^], acc: B): B ? =>
+    if (l.is_empty()) then return acc end
+    _fold[B](l.tail(), f, f(acc, l.head()))
 
 primitive ListT
   fun val empty[A: Any val](): List[A] => recover val LNil[A] end

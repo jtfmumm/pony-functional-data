@@ -56,5 +56,14 @@ class iso _TestList is UnitTest
     let l7 = ListT.from[U32]([1,2,3,4,5,6,7,8]).filter(isEven)
     try h.expect_true(ListT.eq[U32](l7, ListT.from[U32]([2,4,6,8]))) end
 
+    let add = lambda(acc: U32, x: U32): U32 => acc + x end
+    let value = ListT.from[U32]([1,2,3]).fold[U32](add, 0)
+    h.expect_eq[U32](value, 6)
+
+    let doubleAndPrepend = lambda(acc: List[U32], x: U32): List[U32] ? => acc.prepend(x * 2) end
+    let l8 = ListT.from[U32]([1,2,3]).fold[List[U32]](doubleAndPrepend, ListT.empty[U32]())
+    try h.expect_true(ListT.eq[U32](l8, ListT.from[U32]([6,4,2]))) end
+
+
 
     true
