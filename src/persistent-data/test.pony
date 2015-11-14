@@ -32,13 +32,19 @@ class iso _TestList is UnitTest
     try h.expect_eq[U64](d.tail().size(), 2) else error end
     try h.expect_eq[U32](e.head(), 10) else error end
     try h.expect_eq[U64](e.tail().size(), 0) else error end
-//    a.push(0).push(1).push(2)
 
-//    let f = lambda(a: U32): U32 => consume a * 2 end
-//    let c = ListT.map[U32,U32](a, f)
+    let l1 = ListT.from[U32]([1, 2, 3])
+    h.expect_eq[U64](l1.size(), 3)
+    try h.expect_eq[U32](l1.head(), 1) else error end
 
-//    h.expect_eq[U32](c(0), 0)
-//    h.expect_eq[U32](c(1), 2)
-//    h.expect_eq[U32](c(2), 4)
+    let l2 = ListT.from[U32]([4, 5, 6])
+    let l3 = l1.concat(l2)
+    let l4 = l3.reverse()
+    h.expect_eq[U64](l3.size(), 6)
+    try h.expect_true(ListT.eq[U32](l3, ListT.from[U32]([1,2,3,4,5,6]))) end
+    try h.expect_true(ListT.eq[U32](l4, ListT.from[U32]([6,5,4,3,2,1]))) end
+
+    let l5 = ListT.from[U32]([1, 2, 3]).map[U32](lambda(x: U32): U32 => x * 2 end)
+    try h.expect_true(ListT.eq[U32](l5, ListT.from[U32]([2,4,6]))) end
 
     true
