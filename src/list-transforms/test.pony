@@ -15,7 +15,9 @@ actor Main is TestList
     test(_TestExists)
     test(_TestPartition)
     test(_TestDrop)
+//    test(_TestDropWhile)
     test(_TestTake)
+    test(_TestTakeWhile)
 
 class iso _TestMap is UnitTest
   fun name(): String => "list-transforms/map()"
@@ -208,6 +210,43 @@ class iso _TestDrop is UnitTest
 
     true
 
+//class iso _TestDropWhile is UnitTest
+//  fun name(): String => "list-transforms/dropWhile()"
+//
+//  fun apply(h: TestHelper): TestResult ? =>
+//    let a = List[U32]
+//    a.push(0).push(1).push(2).push(3).push(4)
+//
+//    let f = lambda(x: U32): Bool => x < 5 end
+//    let g = lambda(x: U32): Bool => x < 4 end
+//    let y = lambda(x: U32): Bool => x < 1 end
+//    let z = lambda(x: U32): Bool => x < 0 end
+//    let b = ListT.dropWhile[U32](a, f)
+//    let c = ListT.dropWhile[U32](a, g)
+//    let d = ListT.dropWhile[U32](a, y)
+//    let e = ListT.dropWhile[U32](a, z)
+//
+//    h.expect_eq[U64](b.size(), 0)
+//    h.expect_eq[U64](c.size(), 1)
+//    try h.expect_eq[U32](c(0), 0) else error end
+//    h.expect_eq[U64](d.size(), 4)
+//    try h.expect_eq[U32](d(0), 1) else error end
+//    try h.expect_eq[U32](d(1), 2) else error end
+//    try h.expect_eq[U32](d(2), 3) else error end
+//    try h.expect_eq[U32](d(3), 4) else error end
+//    h.expect_eq[U64](e.size(), 5)
+//    try h.expect_eq[U32](e(0), 0) else error end
+//    try h.expect_eq[U32](e(1), 1) else error end
+//    try h.expect_eq[U32](e(2), 2) else error end
+//    try h.expect_eq[U32](e(3), 3) else error end
+//    try h.expect_eq[U32](e(4), 4) else error end
+//
+//    let empty = List[U32]
+//    let l = ListT.dropWhile[U32](empty, g)
+//    h.expect_eq[U64](l.size(), 0)
+//
+//    true
+
 class iso _TestTake is UnitTest
   fun name(): String => "list-transforms/take()"
 
@@ -245,6 +284,43 @@ class iso _TestTake is UnitTest
 
     let empty = List[U32]
     let l = ListT.take[U32](empty, 3)
+    h.expect_eq[U64](l.size(), 0)
+
+    true
+
+class iso _TestTakeWhile is UnitTest
+  fun name(): String => "list-transforms/takeWhile()"
+
+  fun apply(h: TestHelper): TestResult ? =>
+    let a = List[U32]
+    a.push(0).push(1).push(2).push(3).push(4)
+
+    let f = lambda(x: U32): Bool => x < 5 end
+    let g = lambda(x: U32): Bool => x < 4 end
+    let y = lambda(x: U32): Bool => x < 1 end
+    let z = lambda(x: U32): Bool => x < 0 end
+    let b = ListT.takeWhile[U32](a, f)
+    let c = ListT.takeWhile[U32](a, g)
+    let d = ListT.takeWhile[U32](a, y)
+    let e = ListT.takeWhile[U32](a, z)
+
+    h.expect_eq[U64](b.size(), 5)
+    try h.expect_eq[U32](b(0), 0) else error end
+    try h.expect_eq[U32](b(1), 1) else error end
+    try h.expect_eq[U32](b(2), 2) else error end
+    try h.expect_eq[U32](b(3), 3) else error end
+    try h.expect_eq[U32](b(4), 4) else error end
+    h.expect_eq[U64](c.size(), 4)
+    try h.expect_eq[U32](c(0), 0) else error end
+    try h.expect_eq[U32](c(1), 1) else error end
+    try h.expect_eq[U32](c(2), 2) else error end
+    try h.expect_eq[U32](c(3), 3) else error end
+    h.expect_eq[U64](d.size(), 1)
+    try h.expect_eq[U32](d(0), 0) else error end
+    h.expect_eq[U64](e.size(), 0)
+
+    let empty = List[U32]
+    let l = ListT.takeWhile[U32](empty, g)
     h.expect_eq[U64](l.size(), 0)
 
     true

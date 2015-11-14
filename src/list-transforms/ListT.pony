@@ -132,7 +132,7 @@ primitive ListT
     if (l.size() < (n + 1)) then return List[A] end
 
     try
-      _drop[A](l.head(), n)
+      _drop[A](l.clone().head(), n)
     else
       List[A]
     end
@@ -158,7 +158,7 @@ primitive ListT
     if (l.size() <= n) then l end
 
     try
-      _take[A](l.head(), n)
+      _take[A](l.clone().head(), n)
     else
       List[A]
     end
@@ -171,5 +171,28 @@ primitive ListT
       try res.push(cur()) end
       try cur = cur.next() as ListNode[A] else return res end
       count = count - 1
+    end
+    res
+
+  fun takeWhile[A: Any #read](l: List[A], f: Fn1[A!,Bool]): List[A] =>
+    try
+      _takeWhile[A](l.clone().head(), f)
+    else
+      List[A]
+    end
+
+  fun _takeWhile[A: Any #read](ln: ListNode[A], f: Fn1[A!,Bool]): List[A] =>
+    let res = List[A]
+    var cur: ListNode[A] = ln
+    try
+      let initial = cur()
+      if f(initial) then res.push(initial) else return res end
+    end
+    while(cur.has_next()) do
+      try cur = cur.next() as ListNode[A] else return res end
+      try
+        let value = cur()
+        if f(value) then res.push(value) else return res end
+      end
     end
     res
