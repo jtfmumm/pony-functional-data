@@ -1,7 +1,7 @@
 use "collections"
 use "../function-types"
 
-primitive ListT
+primitive MListT
   fun unit[A](a: A): List[A] => List[A].push(consume a)
 
   fun map[A: Any #read, B](l: List[A], f: Fn1[A!, B^]): List[B] =>
@@ -120,7 +120,7 @@ primitive ListT
       return false
     end
 
-  fun partition[A: Any #read](l: List[A], f: Fn1[A!,Bool]): (List[A], List[A]) =>
+  fun partition[A: Any #read](l: List[A], f: Fn1[A!,Bool]): (List[A], List[A]) ? =>
     let l1: List[A] = List[A]
     let l2: List[A] = List[A]
     for item in l.values() do
