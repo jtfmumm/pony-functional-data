@@ -10,7 +10,8 @@ trait val List[A: Any val]
   fun val prepend(a: A): this->List[A]^ ?
   fun val concat(l: List[A]): this->List[A]^ ?
   fun map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ ?
-//  fun flatMap[B](f: Fn1[A!,B^]): this->List[B]^
+  fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ?
+//  fun string(): String
 
 class val LNil[A: Any val] is List[A]
   new create() => this
@@ -24,6 +25,8 @@ class val LNil[A: Any val] is List[A]
     LCons[A](consume a, recover val LNil[A] end) as List[A]
   fun val concat(l: List[A]): this->List[A]^ => l
   fun map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ => recover val LNil[B] end
+  fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ => recover val LNil[B] end
+  fun string(): String => "List()"
 
 class val LCons[A: Any val] is List[A]
   let _size: U64
@@ -55,7 +58,13 @@ class val LCons[A: Any val] is List[A]
   fun _map[B: Any val](l: List[A], f: Fn1[A!,B^], acc: List[B]): this->List[B]^ ? =>
     if (l.is_empty()) then return acc.reverse() end
     _map[B](l.tail(), f, acc.prepend(f(l.head())))
-
+  fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ? =>
+    let first = f(this.head())
+    let firstLst = ListT._rev_prepend[B](first, recover val LNil[B] end)
+    _flatMap[B](this.tail(), f, firstLst)
+  fun _flatMap[B: Any val](l: List[A], f: Fn1[A!,List[B]], acc: List[B]): this->List[B]^ ? =>
+    if (l.is_empty()) then return acc.reverse() end
+    _flatMap[B](l.tail(), f, ListT._rev_prepend[B](f(l.head()), acc))
 
 primitive ListT
   fun val empty[A: Any val](): List[A] => recover val LNil[A] end
@@ -85,6 +94,7 @@ primitive ListT
     end
 
   fun val _rev_prepend[A: Any val](l: List[A], targetL: List[A]): List[A] ? =>
+    // Prepends l in reverse order onto targetL
     if (l.is_empty()) then
       targetL
     else

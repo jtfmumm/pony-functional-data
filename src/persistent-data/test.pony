@@ -1,4 +1,5 @@
 use "ponytest"
+use "../function-types"
 
 actor Main is TestList
   new create(env: Env) => PonyTest(env, this)
@@ -46,5 +47,10 @@ class iso _TestList is UnitTest
 
     let l5 = ListT.from[U32]([1, 2, 3]).map[U32](lambda(x: U32): U32 => x * 2 end)
     try h.expect_true(ListT.eq[U32](l5, ListT.from[U32]([2,4,6]))) end
+
+    let g = lambda(x: U32): List[U32] ? => ListT.from[U32]([x - 1, x, x + 1]) end
+    let l6 = ListT.from[U32]([2, 5, 8]).flatMap[U32](g)
+    try h.expect_true(ListT.eq[U32](l6, ListT.from[U32]([1,2,3,4,5,6,7,8,9]))) end
+
 
     true
