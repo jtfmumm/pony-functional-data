@@ -14,8 +14,6 @@ trait val List[A: Any val]
   fun filter(f: Fn1[A!, Bool]): List[A] ?
   fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
 
-//  fun string(): String
-
 class val LNil[A: Any val] is List[A]
   new create() => this
 
@@ -31,7 +29,6 @@ class val LNil[A: Any val] is List[A]
   fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ => recover val LNil[B] end
   fun filter(f: Fn1[A!, Bool]): List[A] => recover val LNil[A] end
   fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B => acc
-  fun string(): String => "List()"
 
 class val LCons[A: Any val] is List[A]
   let _size: U64

@@ -1,10 +1,45 @@
-# pony-transforms
-Functional transforms for Pony
+# pony-functional-data
+Functional data structures and transformations for the Pony programming language
 
 
-## list-transforms/ListT
+## persistent-data/List
 
-ListT has the following methods:
+Immutable linked list with the following methods:
+```
+  size(): U64
+  is_empty(): Bool
+  is_non_empty(): Bool => not(is_empty())
+  head(): this->A ?
+  tail(): this->List[A] ?
+  reverse(): this->List[A] ?
+  prepend(a: A): this->List[A]^ ?
+  concat(l: List[A]): this->List[A]^ ?
+  map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ ?
+  flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ?
+  filter(f: Fn1[A!, Bool]): List[A] ?
+  fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
+
+```
+
+There is also a primitive called ListT with helper methods:
+```
+  //Returns empty List of As
+  empty[A: Any val](): List[A]
+  cons[A: Any val](a: A, t: List[A]): List[A]
+  //Create a list from an Array of As
+  //  e.g. ListT.from[U32]([1, 2, 3, 4])
+  from[A: Any val](arr: Array[A]): List[A] ?
+  reverse[A: Any val](l: List[A]): List[A] ?
+  flatten[A: Any val](l: List[List[A]]): List[A] ?
+  eq[A: Equatable[A] val](l1: List[A], l2: List[A]): Bool ?
+
+```
+
+## list-transforms/MListT
+
+Helper methods for the "collections" package mutable List
+
+MListT has the following methods:
 
 ```
     unit[A](a: A): List[A]
