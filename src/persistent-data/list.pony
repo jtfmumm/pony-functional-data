@@ -11,6 +11,8 @@ trait val List[A: Any val]
   fun val concat(l: List[A]): this->List[A]^ ?
   fun map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ ?
   fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ?
+  fun filter(f: Fn1[A!, Bool]): List[A] ?
+
 //  fun string(): String
 
 class val LNil[A: Any val] is List[A]
@@ -26,6 +28,7 @@ class val LNil[A: Any val] is List[A]
   fun val concat(l: List[A]): this->List[A]^ => l
   fun map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ => recover val LNil[B] end
   fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ => recover val LNil[B] end
+  fun filter(f: Fn1[A!, Bool]): List[A] => recover val LNil[A] end
   fun string(): String => "List()"
 
 class val LCons[A: Any val] is List[A]
@@ -65,6 +68,19 @@ class val LCons[A: Any val] is List[A]
   fun _flatMap[B: Any val](l: List[A], f: Fn1[A!,List[B]], acc: List[B]): this->List[B]^ ? =>
     if (l.is_empty()) then return acc.reverse() end
     _flatMap[B](l.tail(), f, ListT._rev_prepend[B](f(l.head()), acc))
+  fun filter(f: Fn1[A!, Bool]): List[A] ? =>
+    if (f(this.head())) then
+      _filter(this.tail(), f, ListT.from[A]([this.head()]))
+    else
+      _filter(this.tail(), f, ListT.empty[A]())
+    end
+  fun _filter(l: List[A], f: Fn1[A!, Bool], acc: List[A]): List[A] ? =>
+    if (l.is_empty()) then return acc.reverse() end
+    if (f(l.head())) then
+      _filter(l.tail(), f, acc.prepend(l.head()))
+    else
+      _filter(l.tail(), f, acc)
+    end
 
 primitive ListT
   fun val empty[A: Any val](): List[A] => recover val LNil[A] end
