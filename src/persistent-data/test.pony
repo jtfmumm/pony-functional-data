@@ -15,6 +15,8 @@ actor Main is TestList
     test(_TestFold)
     test(_TestEveryExists)
     test(_TestPartition)
+    test(_TestDrop)
+    test(_TestTake)
 
 
 class iso _TestPrepend is UnitTest
@@ -144,4 +146,28 @@ class iso _TestPartition is UnitTest
     try h.expect_true(ListT.eq[U32](hits, ListT.from[U32]([2,4,6]))) else error end
     try h.expect_true(ListT.eq[U32](misses, ListT.from[U32]([1,3,5]))) else error end
 
+    true
+
+class iso _TestDrop is UnitTest
+  fun name(): String => "persistent-data/List/drop()"
+
+  fun apply(h: TestHelper): TestResult ? =>
+    let l = ListT.from[String](["a","b","c","d","e"])
+    let l2 = ListT.from[U32]([1,2])
+    let empty = ListT.empty[String]()
+    try h.expect_true(ListT.eq[String](l.drop(3), ListT.from[String](["d","e"]))) else error end
+    try h.expect_true(ListT.eq[U32](l2.drop(3), ListT.empty[U32]())) else error end
+    try h.expect_true(ListT.eq[String](empty.drop(3), ListT.empty[String]())) else error end
+    true
+
+class iso _TestTake is UnitTest
+  fun name(): String => "persistent-data/List/take()"
+
+  fun apply(h: TestHelper): TestResult ? =>
+    let l = ListT.from[String](["a","b","c","d","e"])
+    let l2 = ListT.from[U32]([1,2])
+    let empty = ListT.empty[String]()
+    try h.expect_true(ListT.eq[String](l.take(3), ListT.from[String](["a","b","c"]))) else error end
+    try h.expect_true(ListT.eq[U32](l2.take(3), ListT.from[U32]([1,2]))) else error end
+    try h.expect_true(ListT.eq[String](empty.take(3), ListT.empty[String]())) else error end
     true

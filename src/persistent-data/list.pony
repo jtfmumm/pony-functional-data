@@ -16,6 +16,8 @@ trait val List[A: Any val]
   fun every(f: Fn1[A!,Bool]): Bool ?
   fun exists(f: Fn1[A!,Bool]): Bool ?
   fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
+  fun drop(n: U64): List[A] ?
+  fun take(n: U64): List[A] ?
 
 class val LNil[A: Any val] is List[A]
   new create() => this
@@ -24,18 +26,20 @@ class val LNil[A: Any val] is List[A]
   fun is_empty(): Bool => true
   fun head(): this->A ? => error
   fun tail(): this->List[A] ? => error
-  fun val reverse(): this->List[A] => recover val LNil[A] end
+  fun val reverse(): this->List[A] => ListT.empty[A]()
   fun val prepend(a: A): this->List[A]^ ? =>
-    LCons[A](consume a, recover val LNil[A] end) as List[A]
+    LCons[A](consume a, ListT.empty[A]()) as List[A]
   fun val concat(l: List[A]): this->List[A]^ => l
   fun map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ => recover val LNil[B] end
   fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ => recover val LNil[B] end
-  fun filter(f: Fn1[A!, Bool]): List[A] => recover val LNil[A] end
+  fun filter(f: Fn1[A!, Bool]): List[A] => ListT.empty[A]()
   fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B => acc
   fun every(f: Fn1[A!,Bool]): Bool => true
   fun exists(f: Fn1[A!,Bool]): Bool => false
   fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) =>
-    (recover val LNil[A] end, recover val LNil[A] end)
+    (ListT.empty[A](), ListT.empty[A]())
+  fun drop(n: U64): List[A] => ListT.empty[A]()
+  fun take(n: U64): List[A] => ListT.empty[A]()
 
 class val LCons[A: Any val] is List[A]
   let _size: U64
@@ -62,24 +66,20 @@ class val LCons[A: Any val] is List[A]
       _concat(l.tail(), acc.prepend(l.head()))
     end
   fun map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ ? =>
-    let first = f(this.head())
-    _map[B](this.tail(), f, ListT.from[B]([first]))
+    let cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+    _map[B](cur, f, ListT.empty[B]())
   fun _map[B: Any val](l: List[A], f: Fn1[A!,B^], acc: List[B]): this->List[B]^ ? =>
     if (l.is_empty()) then return acc.reverse() end
     _map[B](l.tail(), f, acc.prepend(f(l.head())))
   fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ? =>
-    let first = f(this.head())
-    let firstLst = ListT._rev_prepend[B](first, recover val LNil[B] end)
-    _flatMap[B](this.tail(), f, firstLst)
+    let cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+    _flatMap[B](cur, f, ListT.empty[B]())
   fun _flatMap[B: Any val](l: List[A], f: Fn1[A!,List[B]], acc: List[B]): this->List[B]^ ? =>
     if (l.is_empty()) then return acc.reverse() end
     _flatMap[B](l.tail(), f, ListT._rev_prepend[B](f(l.head()), acc))
   fun filter(f: Fn1[A!, Bool]): List[A] ? =>
-    if (f(this.head())) then
-      _filter(this.tail(), f, ListT.from[A]([this.head()]))
-    else
-      _filter(this.tail(), f, ListT.empty[A]())
-    end
+    let cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+    _filter(cur, f, ListT.empty[A]())
   fun _filter(l: List[A], f: Fn1[A!, Bool], acc: List[A]): List[A] ? =>
     if (l.is_empty()) then return acc.reverse() end
     if (f(l.head())) then
@@ -122,6 +122,26 @@ class val LCons[A: Any val] is List[A]
       cur = cur.tail() as List[A]
     end
     (hits.reverse(), misses.reverse())
+  fun drop(n: U64): List[A] ? =>
+    var cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+    if cur.size() <= n then return ListT.empty[A]() end
+    var count = n
+    while(count > 0) do
+      cur = cur.tail()
+      count = count - 1
+    end
+    cur
+  fun take(n: U64): List[A] ? =>
+    var cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+    if cur.size() <= n then return cur end
+    var count = n
+    var res = ListT.empty[A]()
+    while(count > 0) do
+      res = res.prepend(cur.head())
+      cur = cur.tail()
+      count = count - 1
+    end
+    res.reverse()
 
 primitive ListT
   fun val empty[A: Any val](): List[A] => recover val LNil[A] end
@@ -134,7 +154,7 @@ primitive ListT
     end
     lst.reverse()
 
-  fun val reverse[A: Any val](l: List[A]): List[A] ? => _reverse[A](l, recover val LNil[A] end)
+  fun val reverse[A: Any val](l: List[A]): List[A] ? => _reverse[A](l, ListT.empty[A]())
   fun val _reverse[A: Any val](l: List[A], acc: List[A]): List[A] ? =>
     if l.is_empty() then
       acc
@@ -142,7 +162,7 @@ primitive ListT
       _reverse[A](l.tail(), acc.prepend(l.head()))
     end
 
-  fun val flatten[A: Any val](l: List[List[A]]): List[A] ? => _flatten[A](l, recover val LNil[A] end)
+  fun val flatten[A: Any val](l: List[List[A]]): List[A] ? => _flatten[A](l, ListT.empty[A]())
   fun val _flatten[A: Any val](l: List[List[A]], acc: List[A]): List[A] ? =>
     if l.is_empty() then
       acc.reverse()
