@@ -13,6 +13,9 @@ trait val List[A: Any val]
   fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ?
   fun filter(f: Fn1[A!, Bool]): List[A] ?
   fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
+  fun every(f: Fn1[A!,Bool]): Bool ?
+  fun exists(f: Fn1[A!,Bool]): Bool ?
+  fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
 
 class val LNil[A: Any val] is List[A]
   new create() => this
@@ -29,6 +32,10 @@ class val LNil[A: Any val] is List[A]
   fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ => recover val LNil[B] end
   fun filter(f: Fn1[A!, Bool]): List[A] => recover val LNil[A] end
   fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B => acc
+  fun every(f: Fn1[A!,Bool]): Bool => true
+  fun exists(f: Fn1[A!,Bool]): Bool => false
+  fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) =>
+    (recover val LNil[A] end, recover val LNil[A] end)
 
 class val LCons[A: Any val] is List[A]
   let _size: U64
@@ -85,6 +92,36 @@ class val LCons[A: Any val] is List[A]
   fun _fold[B: Any val](l: List[A], f: Fn2[B!,A!,B^], acc: B): B ? =>
     if (l.is_empty()) then return acc end
     _fold[B](l.tail(), f, f(acc, l.head()))
+  fun every(f: Fn1[A!,Bool]): Bool ? =>
+    if (f(this.head())) then _every(this.tail(), f) else false end
+  fun _every(l: List[A], f: Fn1[A!,Bool]): Bool ? =>
+    if (l.is_empty()) then
+      true
+    elseif (f(l.head())) then
+      _every(l.tail(), f)
+    else
+      false
+    end
+  fun exists(f: Fn1[A!,Bool]): Bool ? =>
+    if (f(this.head())) then true else _exists(this.tail(), f) end
+  fun _exists(l: List[A], f: Fn1[A!,Bool]): Bool ? =>
+    if (l.is_empty()) then
+      false
+    elseif (f(l.head())) then
+      true
+    else
+      _exists(l.tail(), f)
+    end
+  fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) ? =>
+    var hits = ListT.empty[A]()
+    var misses = ListT.empty[A]()
+    var cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+    while(cur.is_non_empty()) do
+      let next = cur.head()
+      if (f(next)) then hits = hits.prepend(next) else misses = misses.prepend(next) end
+      cur = cur.tail() as List[A]
+    end
+    (hits.reverse(), misses.reverse())
 
 primitive ListT
   fun val empty[A: Any val](): List[A] => recover val LNil[A] end
