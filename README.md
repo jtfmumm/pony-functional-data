@@ -24,7 +24,7 @@ Immutable linked list with the following methods:
 
   map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ ?
 
-  flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ?
+  flat_map[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ?
 
   filter(f: Fn1[A!, Bool]): List[A] ?
 
@@ -76,7 +76,7 @@ MListT has the following methods:
 
     map[A: Any #read, B](l: List[A], f: Fn1[A!, B^]): List[B]
 
-    flatMap[A: Any #read, B](l: List[A], f: Fn1[A!,List[B]]): List[B]
+    flat_map[A: Any #read, B](l: List[A], f: Fn1[A!,List[B]]): List[B]
 
     flatten[A](l: List[List[A]]): List[A]
 
@@ -94,7 +94,7 @@ MListT has the following methods:
 
     take[A: Any #read](l: List[A], n: U64): List[A]
 
-    takeWhile[A: Any #read](l: List[A], f: Fn1[A!,Bool]): List[A]
+    take_while[A: Any #read](l: List[A], f: Fn1[A!,Bool]): List[A]
 ```
 
 ## function-types
