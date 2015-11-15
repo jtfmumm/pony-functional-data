@@ -12,27 +12,27 @@ Immutable linked list with the following methods:
 
   is_non_empty(): Bool => not(is_empty())
 
-  head(): this->A ?
+  head(): A ?
 
-  tail(): this->List[A] ?
+  tail(): List[A] ?
 
-  reverse(): this->List[A] ?
+  reverse(): List[A]
 
-  prepend(a: A): this->List[A]^ ?
+  prepend(a: A): List[A]
 
-  concat(l: List[A]): this->List[A]^ ?
+  concat(l: List[A]): List[A]
 
-  map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ ?
+  map[B: Any val](f: Fn1[A!,B^]): List[B]
 
-  flat_map[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ?
+  flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B]
 
-  filter(f: Fn1[A!, Bool]): List[A] ?
+  filter(f: Fn1[A!, Bool]): List[A]
 
-  fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
+  fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B
 
-  every(f: Fn1[A!,Bool]): Bool ?
+  every(f: Fn1[A!,Bool]): Bool
 
-  exists(f: Fn1[A!,Bool]): Bool ?
+  exists(f: Fn1[A!,Bool]): Bool
 
   partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
 

@@ -85,7 +85,7 @@ class iso _TestFlatMap is UnitTest
   fun name(): String => "persistent-data/ListT/flat_map()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let f = lambda(x: U32): List[U32] ? => ListT.from[U32]([x - 1, x, x + 1]) end
+    let f = lambda(x: U32): List[U32] => ListT.from[U32]([x - 1, x, x + 1]) end
     let l6 = ListT.from[U32]([2, 5, 8]).flat_map[U32](f)
     try h.expect_true(ListT.eq[U32](l6, ListT.from[U32]([1,2,3,4,5,6,7,8,9]))) else error end
 
@@ -109,7 +109,7 @@ class iso _TestFold is UnitTest
     let value = ListT.from[U32]([1,2,3]).fold[U32](add, 0)
     h.expect_eq[U32](value, 6)
 
-    let doubleAndPrepend = lambda(acc: List[U32], x: U32): List[U32] ? => acc.prepend(x * 2) end
+    let doubleAndPrepend = lambda(acc: List[U32], x: U32): List[U32] => acc.prepend(x * 2) end
     let l8 = ListT.from[U32]([1,2,3]).fold[List[U32]](doubleAndPrepend, ListT.empty[U32]())
     try h.expect_true(ListT.eq[U32](l8, ListT.from[U32]([6,4,2]))) else error end
 
@@ -118,23 +118,23 @@ class iso _TestFold is UnitTest
 class iso _TestEveryExists is UnitTest
   fun name(): String => "persistent-data/ListT/every()exists()"
 
-  fun apply(h: TestHelper): TestResult ? =>
+  fun apply(h: TestHelper): TestResult =>
     let is_even = lambda(x: U32): Bool => x % 2 == 0 end
     let l9 = ListT.from[U32]([4,2,10])
     let l10 = ListT.from[U32]([1,1,3])
     let l11 = ListT.from[U32]([1,1,2])
     let l12 = ListT.from[U32]([2,2,3])
     let l13 = ListT.empty[U32]()
-    try h.expect_eq[Bool](l9.every(is_even), true) else error end
-    try h.expect_eq[Bool](l10.every(is_even), false) else error end
-    try h.expect_eq[Bool](l11.every(is_even), false) else error end
-    try h.expect_eq[Bool](l12.every(is_even), false) else error end
-    try h.expect_eq[Bool](l13.every(is_even), true) else error end
-    try h.expect_eq[Bool](l9.exists(is_even), true) else error end
-    try h.expect_eq[Bool](l10.exists(is_even), false) else error end
-    try h.expect_eq[Bool](l11.exists(is_even), true) else error end
-    try h.expect_eq[Bool](l12.exists(is_even), true) else error end
-    try h.expect_eq[Bool](l13.exists(is_even), false) else error end
+    h.expect_eq[Bool](l9.every(is_even), true)
+    h.expect_eq[Bool](l10.every(is_even), false)
+    h.expect_eq[Bool](l11.every(is_even), false)
+    h.expect_eq[Bool](l12.every(is_even), false)
+    h.expect_eq[Bool](l13.every(is_even), true)
+    h.expect_eq[Bool](l9.exists(is_even), true)
+    h.expect_eq[Bool](l10.exists(is_even), false)
+    h.expect_eq[Bool](l11.exists(is_even), true)
+    h.expect_eq[Bool](l12.exists(is_even), true)
+    h.expect_eq[Bool](l13.exists(is_even), false)
 
     true
 
