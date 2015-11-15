@@ -34,15 +34,15 @@ Immutable linked list with the following methods:
 
   exists(f: Fn1[A!,Bool]): Bool
 
-  partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
+  partition(f: Fn1[A!,Bool]): (List[A], List[A])
 
-  drop(n: U64): List[A] ?
+  drop(n: U64): List[A]
 
-  drop_while(f: Fn1[A!,Bool]): List[A] ?
+  drop_while(f: Fn1[A!,Bool]): List[A]
 
-  take(n: U64): List[A] ?
+  take(n: U64): List[A]
 
-  take_while(f: Fn1[A!,Bool]): List[A] ?
+  take_while(f: Fn1[A!,Bool]): List[A]
 
 ```
 

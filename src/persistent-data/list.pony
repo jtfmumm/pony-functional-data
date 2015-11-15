@@ -15,7 +15,7 @@ trait val List[A: Any val]
   fun val fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B
   fun every(f: Fn1[A!,Bool]): Bool
   fun exists(f: Fn1[A!,Bool]): Bool
-  fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
+  fun partition(f: Fn1[A!,Bool]): (List[A], List[A])
   fun drop(n: U64): List[A]
   fun drop_while(f: Fn1[A!,Bool]): List[A]
   fun take(n: U64): List[A]
@@ -163,14 +163,18 @@ class val LCons[A: Any val] is List[A]
       false
     end
 
-  fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) ? =>
+  fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) =>
     var hits = ListT.empty[A]()
     var misses = ListT.empty[A]()
     var cur: List[A] = LCons[A](this.head(), this.tail())
-    while(cur.is_non_empty()) do
-      let next = cur.head()
-      if (f(next)) then hits = hits.prepend(next) else misses = misses.prepend(next) end
-      cur = cur.tail()
+    while(true) do
+      try
+        let next = cur.head()
+        if (f(next)) then hits = hits.prepend(next) else misses = misses.prepend(next) end
+        cur = cur.tail()
+      else
+        break
+      end
     end
     (hits.reverse(), misses.reverse())
 
