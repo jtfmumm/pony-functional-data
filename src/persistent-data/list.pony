@@ -10,14 +10,16 @@ trait val List[A: Any val]
   fun val prepend(a: A): this->List[A]^ ?
   fun val concat(l: List[A]): this->List[A]^ ?
   fun map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ ?
-  fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ?
+  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ?
   fun filter(f: Fn1[A!, Bool]): List[A] ?
   fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
   fun every(f: Fn1[A!,Bool]): Bool ?
   fun exists(f: Fn1[A!,Bool]): Bool ?
   fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
   fun drop(n: U64): List[A] ?
+  fun drop_while(f: Fn1[A!,Bool]): List[A] ?
   fun take(n: U64): List[A] ?
+  fun take_while(f: Fn1[A!,Bool]): List[A] ?
 
 class val LNil[A: Any val] is List[A]
   new create() => this
@@ -31,7 +33,7 @@ class val LNil[A: Any val] is List[A]
     LCons[A](consume a, ListT.empty[A]()) as List[A]
   fun val concat(l: List[A]): this->List[A]^ => l
   fun map[B: Any val](f: Fn1[A!,B^]): this->List[B]^ => recover val LNil[B] end
-  fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ => recover val LNil[B] end
+  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ => recover val LNil[B] end
   fun filter(f: Fn1[A!, Bool]): List[A] => ListT.empty[A]()
   fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B => acc
   fun every(f: Fn1[A!,Bool]): Bool => true
@@ -39,7 +41,9 @@ class val LNil[A: Any val] is List[A]
   fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) =>
     (ListT.empty[A](), ListT.empty[A]())
   fun drop(n: U64): List[A] => ListT.empty[A]()
+  fun drop_while(f: Fn1[A!,Bool]): List[A] => ListT.empty[A]()
   fun take(n: U64): List[A] => ListT.empty[A]()
+  fun take_while(f: Fn1[A!,Bool]): List[A] => ListT.empty[A]()
 
 class val LCons[A: Any val] is List[A]
   let _size: U64
@@ -71,12 +75,12 @@ class val LCons[A: Any val] is List[A]
   fun _map[B: Any val](l: List[A], f: Fn1[A!,B^], acc: List[B]): this->List[B]^ ? =>
     if (l.is_empty()) then return acc.reverse() end
     _map[B](l.tail(), f, acc.prepend(f(l.head())))
-  fun flatMap[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ? =>
+  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): this->List[B]^ ? =>
     let cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
-    _flatMap[B](cur, f, ListT.empty[B]())
-  fun _flatMap[B: Any val](l: List[A], f: Fn1[A!,List[B]], acc: List[B]): this->List[B]^ ? =>
+    _flat_map[B](cur, f, ListT.empty[B]())
+  fun _flat_map[B: Any val](l: List[A], f: Fn1[A!,List[B]], acc: List[B]): this->List[B]^ ? =>
     if (l.is_empty()) then return acc.reverse() end
-    _flatMap[B](l.tail(), f, ListT._rev_prepend[B](f(l.head()), acc))
+    _flat_map[B](l.tail(), f, ListT._rev_prepend[B](f(l.head()), acc))
   fun filter(f: Fn1[A!, Bool]): List[A] ? =>
     let cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
     _filter(cur, f, ListT.empty[A]())
@@ -131,6 +135,12 @@ class val LCons[A: Any val] is List[A]
       count = count - 1
     end
     cur
+  fun drop_while(f: Fn1[A!,Bool]): List[A] ? =>
+    var cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+    while(f(cur.head())) do
+      cur = cur.tail()
+    end
+    cur
   fun take(n: U64): List[A] ? =>
     var cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
     if cur.size() <= n then return cur end
@@ -140,6 +150,14 @@ class val LCons[A: Any val] is List[A]
       res = res.prepend(cur.head())
       cur = cur.tail()
       count = count - 1
+    end
+    res.reverse()
+  fun take_while(f: Fn1[A!,Bool]): List[A] ? =>
+    var cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+    var res = ListT.empty[A]()
+    while(f(cur.head())) do
+      res = res.prepend(cur.head())
+      cur = cur.tail()
     end
     res.reverse()
 
