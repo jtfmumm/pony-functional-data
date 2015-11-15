@@ -30,6 +30,20 @@ Immutable linked list with the following methods:
 
   fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
 
+  every(f: Fn1[A!,Bool]): Bool ?
+
+  exists(f: Fn1[A!,Bool]): Bool ?
+
+  partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
+
+  drop(n: U64): List[A] ?
+
+  drop_while(f: Fn1[A!,Bool]): List[A] ?
+
+  take(n: U64): List[A] ?
+
+  take_while(f: Fn1[A!,Bool]): List[A] ?
+
 ```
 
 There is also a primitive called ListT with helper methods:
@@ -73,7 +87,7 @@ MListT has the following methods:
     every[A: Any #read](l: List[A], f: Fn1[A!,Bool]): Bool
 
     exists[A: Any #read](l: List[A], f: Fn1[A!,Bool]): Bool
-  
+
     partition[A: Any #read](l: List[A], f: Fn1[A!,Bool]): (List[A], List[A])
 
     drop[A: Any #read](l: List[A], n: U64): List[A]
@@ -97,5 +111,5 @@ Provides abstract functional interfaces:
 
     Fn4[IN1: Any #read,IN2: Any #read,IN3: Any #read,IN4: Any #read,OUT]
 
-    Fn5[IN1: Any #read,IN2: Any #read,IN3: Any #read,IN4: Any #read,IN5: Any #read,OUT]
+    Fn5[IN1: Any #read,IN2: Any #read,IN3: Any #read,IN4: Any #read,IN5: Any #read,OUT]  
 ```

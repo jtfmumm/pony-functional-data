@@ -36,14 +36,14 @@ class iso _TestMap is UnitTest
     true
 
 class iso _TestFlatMap is UnitTest
-  fun name(): String => "list-transforms/flatMap()"
+  fun name(): String => "list-transforms/flat_map()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let a = List[U32]
     a.push(0).push(1).push(2)
 
     let f = lambda(a: U32): List[U32] => List[U32].push(consume a * 2) end
-    let c = MListT.flatMap[U32,U32](a, f)
+    let c = MListT.flat_map[U32,U32](a, f)
 
     h.expect_eq[U32](c(0), 0)
     h.expect_eq[U32](c(1), 2)
@@ -211,7 +211,7 @@ class iso _TestDrop is UnitTest
     true
 
 //class iso _TestDropWhile is UnitTest
-//  fun name(): String => "list-transforms/dropWhile()"
+//  fun name(): String => "list-transforms/drop_while()"
 //
 //  fun apply(h: TestHelper): TestResult ? =>
 //    let a = List[U32]
@@ -221,10 +221,10 @@ class iso _TestDrop is UnitTest
 //    let g = lambda(x: U32): Bool => x < 4 end
 //    let y = lambda(x: U32): Bool => x < 1 end
 //    let z = lambda(x: U32): Bool => x < 0 end
-//    let b = MListT.dropWhile[U32](a, f)
-//    let c = MListT.dropWhile[U32](a, g)
-//    let d = MListT.dropWhile[U32](a, y)
-//    let e = MListT.dropWhile[U32](a, z)
+//    let b = MListT.drop_while[U32](a, f)
+//    let c = MListT.drop_while[U32](a, g)
+//    let d = MListT.drop_while[U32](a, y)
+//    let e = MListT.drop_while[U32](a, z)
 //
 //    h.expect_eq[U64](b.size(), 0)
 //    h.expect_eq[U64](c.size(), 1)
@@ -242,7 +242,7 @@ class iso _TestDrop is UnitTest
 //    try h.expect_eq[U32](e(4), 4) else error end
 //
 //    let empty = List[U32]
-//    let l = MListT.dropWhile[U32](empty, g)
+//    let l = MListT.drop_while[U32](empty, g)
 //    h.expect_eq[U64](l.size(), 0)
 //
 //    true
@@ -289,7 +289,7 @@ class iso _TestTake is UnitTest
     true
 
 class iso _TestTakeWhile is UnitTest
-  fun name(): String => "list-transforms/takeWhile()"
+  fun name(): String => "list-transforms/take_while()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let a = List[U32]
@@ -299,10 +299,10 @@ class iso _TestTakeWhile is UnitTest
     let g = lambda(x: U32): Bool => x < 4 end
     let y = lambda(x: U32): Bool => x < 1 end
     let z = lambda(x: U32): Bool => x < 0 end
-    let b = MListT.takeWhile[U32](a, f)
-    let c = MListT.takeWhile[U32](a, g)
-    let d = MListT.takeWhile[U32](a, y)
-    let e = MListT.takeWhile[U32](a, z)
+    let b = MListT.take_while[U32](a, f)
+    let c = MListT.take_while[U32](a, g)
+    let d = MListT.take_while[U32](a, y)
+    let e = MListT.take_while[U32](a, z)
 
     h.expect_eq[U64](b.size(), 5)
     try h.expect_eq[U32](b(0), 0) else error end
@@ -320,7 +320,7 @@ class iso _TestTakeWhile is UnitTest
     h.expect_eq[U64](e.size(), 0)
 
     let empty = List[U32]
-    let l = MListT.takeWhile[U32](empty, g)
+    let l = MListT.take_while[U32](empty, g)
     h.expect_eq[U64](l.size(), 0)
 
     true

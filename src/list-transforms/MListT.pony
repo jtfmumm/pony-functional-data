@@ -20,18 +20,18 @@ primitive MListT
       acc
     end
 
-  fun flatMap[A: Any #read, B](l: List[A], f: Fn1[A!,List[B]]): List[B] =>
+  fun flat_map[A: Any #read, B](l: List[A], f: Fn1[A!,List[B]]): List[B] =>
     try
-      _flatMap[A,B](l.head(), f, List[List[B]])
+      _flat_map[A,B](l.head(), f, List[List[B]])
     else
       List[B]
     end
 
-  fun _flatMap[A: Any #read, B](ln: ListNode[A], f: Fn1[A!,List[B]], acc: List[List[B]]): List[B] =>
+  fun _flat_map[A: Any #read, B](ln: ListNode[A], f: Fn1[A!,List[B]], acc: List[List[B]]): List[B] =>
     try acc.push(f(ln())) end
 
     try
-      _flatMap[A,B](ln.next() as ListNode[A], f, acc)
+      _flat_map[A,B](ln.next() as ListNode[A], f, acc)
     else
       flatten[B](acc)
     end
@@ -174,14 +174,14 @@ primitive MListT
     end
     res
 
-  fun takeWhile[A: Any #read](l: List[A], f: Fn1[A!,Bool]): List[A] =>
+  fun take_while[A: Any #read](l: List[A], f: Fn1[A!,Bool]): List[A] =>
     try
-      _takeWhile[A](l.clone().head(), f)
+      _take_while[A](l.clone().head(), f)
     else
       List[A]
     end
 
-  fun _takeWhile[A: Any #read](ln: ListNode[A], f: Fn1[A!,Bool]): List[A] =>
+  fun _take_while[A: Any #read](ln: ListNode[A], f: Fn1[A!,Bool]): List[A] =>
     let res = List[A]
     var cur: ListNode[A] = ln
     try
