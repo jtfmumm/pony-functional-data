@@ -95,8 +95,8 @@ class iso _TestFilter is UnitTest
   fun name(): String => "persistent-data/ListT/filter()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let isEven = lambda(x: U32): Bool => x % 2 == 0 end
-    let l7 = ListT.from[U32]([1,2,3,4,5,6,7,8]).filter(isEven)
+    let is_even = lambda(x: U32): Bool => x % 2 == 0 end
+    let l7 = ListT.from[U32]([1,2,3,4,5,6,7,8]).filter(is_even)
     try h.expect_true(ListT.eq[U32](l7, ListT.from[U32]([2,4,6,8]))) else error end
 
     true
@@ -119,22 +119,22 @@ class iso _TestEveryExists is UnitTest
   fun name(): String => "persistent-data/ListT/every()exists()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let isEven = lambda(x: U32): Bool => x % 2 == 0 end
+    let is_even = lambda(x: U32): Bool => x % 2 == 0 end
     let l9 = ListT.from[U32]([4,2,10])
     let l10 = ListT.from[U32]([1,1,3])
     let l11 = ListT.from[U32]([1,1,2])
     let l12 = ListT.from[U32]([2,2,3])
     let l13 = ListT.empty[U32]()
-    try h.expect_eq[Bool](l9.every(isEven), true) else error end
-    try h.expect_eq[Bool](l10.every(isEven), false) else error end
-    try h.expect_eq[Bool](l11.every(isEven), false) else error end
-    try h.expect_eq[Bool](l12.every(isEven), false) else error end
-    try h.expect_eq[Bool](l13.every(isEven), true) else error end
-    try h.expect_eq[Bool](l9.exists(isEven), true) else error end
-    try h.expect_eq[Bool](l10.exists(isEven), false) else error end
-    try h.expect_eq[Bool](l11.exists(isEven), true) else error end
-    try h.expect_eq[Bool](l12.exists(isEven), true) else error end
-    try h.expect_eq[Bool](l13.exists(isEven), false) else error end
+    try h.expect_eq[Bool](l9.every(is_even), true) else error end
+    try h.expect_eq[Bool](l10.every(is_even), false) else error end
+    try h.expect_eq[Bool](l11.every(is_even), false) else error end
+    try h.expect_eq[Bool](l12.every(is_even), false) else error end
+    try h.expect_eq[Bool](l13.every(is_even), true) else error end
+    try h.expect_eq[Bool](l9.exists(is_even), true) else error end
+    try h.expect_eq[Bool](l10.exists(is_even), false) else error end
+    try h.expect_eq[Bool](l11.exists(is_even), true) else error end
+    try h.expect_eq[Bool](l12.exists(is_even), true) else error end
+    try h.expect_eq[Bool](l13.exists(is_even), false) else error end
 
     true
 
@@ -142,9 +142,9 @@ class iso _TestPartition is UnitTest
   fun name(): String => "persistent-data/ListT/partition()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let isEven = lambda(x: U32): Bool => x % 2 == 0 end
+    let is_even = lambda(x: U32): Bool => x % 2 == 0 end
     let l = ListT.from[U32]([1,2,3,4,5,6])
-    (let hits, let misses) = l.partition(isEven)
+    (let hits, let misses) = l.partition(is_even)
     try h.expect_true(ListT.eq[U32](hits, ListT.from[U32]([2,4,6]))) else error end
     try h.expect_true(ListT.eq[U32](misses, ListT.from[U32]([1,3,5]))) else error end
 
@@ -166,11 +166,11 @@ class iso _TestDropWhile is UnitTest
   fun name(): String => "persistent-data/List/drop_while()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let isEven = lambda(x: U32): Bool => x % 2 == 0 end
+    let is_even = lambda(x: U32): Bool => x % 2 == 0 end
     let l = ListT.from[U32]([4,2,6,1,3,4,6])
     let empty = ListT.empty[U32]()
-    try h.expect_true(ListT.eq[U32](l.drop_while(isEven), ListT.from[U32]([1,3,4,6]))) else error end
-    try h.expect_true(ListT.eq[U32](empty.drop_while(isEven), ListT.empty[U32]())) else error end
+    try h.expect_true(ListT.eq[U32](l.drop_while(is_even), ListT.from[U32]([1,3,4,6]))) else error end
+    try h.expect_true(ListT.eq[U32](empty.drop_while(is_even), ListT.empty[U32]())) else error end
     true
 
 class iso _TestTake is UnitTest
@@ -189,9 +189,9 @@ class iso _TestTakeWhile is UnitTest
   fun name(): String => "persistent-data/List/take_while()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let isEven = lambda(x: U32): Bool => x % 2 == 0 end
+    let is_even = lambda(x: U32): Bool => x % 2 == 0 end
     let l = ListT.from[U32]([4,2,6,1,3,4,6])
     let empty = ListT.empty[U32]()
-    try h.expect_true(ListT.eq[U32](l.take_while(isEven), ListT.from[U32]([4,2,6]))) else error end
-    try h.expect_true(ListT.eq[U32](empty.take_while(isEven), ListT.empty[U32]())) else error end
+    try h.expect_true(ListT.eq[U32](l.take_while(is_even), ListT.from[U32]([4,2,6]))) else error end
+    try h.expect_true(ListT.eq[U32](empty.take_while(is_even), ListT.empty[U32]())) else error end
     true
