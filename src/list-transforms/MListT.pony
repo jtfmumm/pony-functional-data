@@ -90,8 +90,6 @@ primitive MListT
       let a: A = ln()
       if (not(f(a))) then
         return false
-      elseif (not(ln.has_next())) then
-        return true
       else
         return _every[A](ln.next() as ListNode[A], f)
       end
@@ -111,8 +109,6 @@ primitive MListT
       let a: A = ln()
       if (f(a)) then
         return true
-      elseif (not(ln.has_next())) then
-        return false
       else
         return _exists[A](ln.next() as ListNode[A], f)
       end
