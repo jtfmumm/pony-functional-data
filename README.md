@@ -1,6 +1,12 @@
 # pony-functional-data
 Functional data structures and transformations for the Pony programming language
 
+The current implementations rely on try blocks instead of traditional
+conditional checks when traversing lists. This may not be performant.
+If not, the implementations will be updated and many of these methods
+will become partial functions. The following gist illustrates the question
+at issue:
+https://gist.github.com/jtfmumm/b2986baa39fa4518c393
 
 ## persistent-data/List
 
