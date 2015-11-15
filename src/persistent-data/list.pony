@@ -232,20 +232,20 @@ primitive ListT
       acc
     end
 
-  fun val flatten[T: Any val](l: List[List[T]]): List[T] ? => _flatten[T](l, ListT.empty[T]())
-  fun val _flatten[T: Any val](l: List[List[T]], acc: List[T]): List[T] ? =>
-    if l.is_empty() then
-      acc.reverse()
-    else
+  fun val flatten[T: Any val](l: List[List[T]]): List[T] => _flatten[T](l, ListT.empty[T]())
+  fun val _flatten[T: Any val](l: List[List[T]], acc: List[T]): List[T] =>
+    try
       _flatten[T](l.tail(), _rev_prepend[T](l.head(), acc))
+    else
+      acc.reverse()
     end
 
-  fun val _rev_prepend[T: Any val](l: List[T], target_l: List[T]): List[T] ? =>
+  fun val _rev_prepend[T: Any val](l: List[T], target_l: List[T]): List[T] =>
     // Prepends l in reverse order onto targetL
-    if (l.is_empty()) then
-      target_l
-    else
+    try
       _rev_prepend[T](l.tail(), target_l.prepend(l.head()))
+    else
+      target_l
     end
 
   fun eq[T: Equatable[T] val](l1: List[T], l2: List[T]): Bool ? =>

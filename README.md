@@ -55,11 +55,11 @@ There is also a primitive called ListT with helper methods:
 
   //Create a list from an Array of As
   //  e.g. ListT.from[U32]([1, 2, 3, 4])
-  from[A: Any val](arr: Array[A]): List[A] ?
+  from[A: Any val](arr: Array[A]): List[A]
 
-  reverse[A: Any val](l: List[A]): List[A] ?
+  reverse[A: Any val](l: List[A]): List[A]
 
-  flatten[A: Any val](l: List[List[A]]): List[A] ?
+  flatten[A: Any val](l: List[List[A]]): List[A]
 
   eq[A: Equatable[A] val](l1: List[A], l2: List[A]): Bool ?
 
