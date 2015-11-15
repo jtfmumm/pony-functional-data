@@ -16,7 +16,7 @@ Immutable linked list with the following methods:
 
   is_empty(): Bool
 
-  is_non_empty(): Bool => not(is_empty())
+  is_non_empty(): Bool
 
   head(): A ?
 
