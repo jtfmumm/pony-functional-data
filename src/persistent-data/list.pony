@@ -16,10 +16,10 @@ trait val List[A: Any val]
   fun every(f: Fn1[A!,Bool]): Bool
   fun exists(f: Fn1[A!,Bool]): Bool
   fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
-  fun drop(n: U64): List[A] ?
-  fun drop_while(f: Fn1[A!,Bool]): List[A] ?
-  fun take(n: U64): List[A] ?
-  fun take_while(f: Fn1[A!,Bool]): List[A] ?
+  fun drop(n: U64): List[A]
+  fun drop_while(f: Fn1[A!,Bool]): List[A]
+  fun take(n: U64): List[A]
+  fun take_while(f: Fn1[A!,Bool]): List[A]
 
 class val LNil[A: Any val] is List[A]
   new create() => this
@@ -174,41 +174,57 @@ class val LCons[A: Any val] is List[A]
     end
     (hits.reverse(), misses.reverse())
 
-  fun drop(n: U64): List[A] ? =>
-    var cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+  fun drop(n: U64): List[A] =>
+    var cur: List[A] = LCons[A](this.head(), this.tail())
     if cur.size() <= n then return ListT.empty[A]() end
     var count = n
     while(count > 0) do
-      cur = cur.tail()
+      try cur = cur.tail() else return ListT.empty[A]() end
       count = count - 1
     end
     cur
 
-  fun drop_while(f: Fn1[A!,Bool]): List[A] ? =>
-    var cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
-    while(f(cur.head())) do
-      cur = cur.tail()
+  fun drop_while(f: Fn1[A!,Bool]): List[A] =>
+    var cur: List[A] = LCons[A](this.head(), this.tail())
+    while(true) do
+      try
+        if f(cur.head()) then cur = cur.tail() else break end
+      else
+        return ListT.empty[A]()
+      end
     end
     cur
 
-  fun take(n: U64): List[A] ? =>
-    var cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+  fun take(n: U64): List[A] =>
+    var cur: List[A] = LCons[A](this.head(), this.tail())
     if cur.size() <= n then return cur end
     var count = n
     var res = ListT.empty[A]()
     while(count > 0) do
-      res = res.prepend(cur.head())
-      cur = cur.tail()
+      try
+        res = res.prepend(cur.head())
+        cur = cur.tail()
+      else
+        return res.reverse()
+      end
       count = count - 1
     end
     res.reverse()
 
-  fun take_while(f: Fn1[A!,Bool]): List[A] ? =>
-    var cur: List[A] = LCons[A](this.head(), this.tail() as List[A])
+  fun take_while(f: Fn1[A!,Bool]): List[A] =>
+    var cur: List[A] = LCons[A](this.head(), this.tail())
     var res = ListT.empty[A]()
-    while(f(cur.head())) do
-      res = res.prepend(cur.head())
-      cur = cur.tail()
+    while(true) do
+      try
+        if f(cur.head()) then
+          res = res.prepend(cur.head())
+          cur = cur.tail()
+        else
+          break
+        end
+      else
+        return res.reverse()
+      end
     end
     res.reverse()
 
