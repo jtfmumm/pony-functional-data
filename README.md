@@ -16,7 +16,6 @@ this paper: http://lampwww.epfl.ch/papers/idealhashtrees.pdf.
 Currently has the following methods:
 ```
   fun size(): U64
-  fun is_leaf(): Bool
   fun apply(k: String): (V | None) ?
   fun get(k: String): (V | None) ?
   fun put(k: String, v: V): Map[V] ?
