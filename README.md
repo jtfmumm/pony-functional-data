@@ -8,6 +8,20 @@ will become partial functions. The following gist illustrates the question
 at issue:
 https://gist.github.com/jtfmumm/b2986baa39fa4518c393
 
+## persistent-data/Map
+
+A persistent immutable map based on the Hash Array Mapped Trie described by Bagwell in
+this paper: http://lampwww.epfl.ch/papers/idealhashtrees.pdf.
+
+Currently has the following methods:
+```
+  fun size(): U64
+  fun is_leaf(): Bool
+  fun apply(k: String): (V | None) ?
+  fun get(k: String): (V | None) ?
+  fun put(k: String, v: V): Map[V] ?
+```
+
 ## persistent-data/List
 
 Immutable linked list with the following methods:

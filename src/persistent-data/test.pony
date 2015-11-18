@@ -19,7 +19,8 @@ actor Main is TestList
     test(_TestDropWhile)
     test(_TestTake)
     test(_TestTakeWhile)
-
+    test(_TestBitOps)
+    test(_TestHAMTMap)
 
 class iso _TestPrepend is UnitTest
   fun name(): String => "persistent-data/List/prepend()"
@@ -195,3 +196,117 @@ class iso _TestTakeWhile is UnitTest
     try h.expect_true(ListT.eq[U32](l.take_while(is_even), ListT.from[U32]([4,2,6]))) else error end
     try h.expect_true(ListT.eq[U32](empty.take_while(is_even), ListT.empty[U32]())) else error end
     true
+
+
+class iso _TestBitOps is UnitTest
+  fun name(): String => "hamt/_BitOps"
+
+  fun apply(h: TestHelper): TestResult =>
+    let a = _BitOps.maskLow(845)
+    let b = _BitOps.maskLow(968)
+    let c = _BitOps.maskLow(875)
+    let d = _BitOps.maskLow(559)
+    let e = _BitOps.maskLow(618)
+    h.expect_eq[U32](a, 13)
+    h.expect_eq[U32](b, 8)
+    h.expect_eq[U32](c, 11)
+    h.expect_eq[U32](d, 15)
+    h.expect_eq[U32](e, 10)
+
+    //1100 00011 11101 01001 10111 or 12711223
+    let b0 = _BitOps.bitmapIdxFor(12711223, 0)
+    let b1 = _BitOps.bitmapIdxFor(12711223, 1)
+    let b2 = _BitOps.bitmapIdxFor(12711223, 2)
+    let b3 = _BitOps.bitmapIdxFor(12711223, 3)
+    let b4 = _BitOps.bitmapIdxFor(12711223, 4)
+    h.expect_eq[U32](b0, 23)
+    h.expect_eq[U32](b1, 9)
+    h.expect_eq[U32](b2, 29)
+    h.expect_eq[U32](b3, 3)
+    h.expect_eq[U32](b4, 12)
+
+    let c0 = _BitOps.checkIdxBit(13, 0)
+    let c1 = _BitOps.checkIdxBit(13, 1)
+    let c2 = _BitOps.checkIdxBit(13, 2)
+    let c3 = _BitOps.checkIdxBit(13, 3)
+    let c4 = _BitOps.checkIdxBit(13, 4)
+    let c5 = _BitOps.checkIdxBit(26, 0)
+    let c6 = _BitOps.checkIdxBit(26, 1)
+    let c7 = _BitOps.checkIdxBit(26, 2)
+    let c8 = _BitOps.checkIdxBit(26, 3)
+    let c9 = _BitOps.checkIdxBit(26, 4)
+    h.expect_eq[Bool](c0, true)
+    h.expect_eq[Bool](c1, false)
+    h.expect_eq[Bool](c2, true)
+    h.expect_eq[Bool](c3, true)
+    h.expect_eq[Bool](c4, false)
+    h.expect_eq[Bool](c5, false)
+    h.expect_eq[Bool](c6, true)
+    h.expect_eq[Bool](c7, false)
+    h.expect_eq[Bool](c8, true)
+    h.expect_eq[Bool](c9, true)
+
+    let d0 = _BitOps.flipIndexedBitOn(8, 0)
+    let d1 = _BitOps.flipIndexedBitOn(8, 1)
+    let d2 = _BitOps.flipIndexedBitOn(8, 2)
+    let d3 = _BitOps.flipIndexedBitOn(8, 3)
+    let d4 = _BitOps.flipIndexedBitOn(8, 4)
+    h.expect_eq[U32](d0, 9)
+    h.expect_eq[U32](d1, 10)
+    h.expect_eq[U32](d2, 12)
+    h.expect_eq[U32](d3, 8)
+    h.expect_eq[U32](d4, 24)
+
+    let e0 = _BitOps.countPop(13)
+    let e1 = _BitOps.countPop(8)
+    let e2 = _BitOps.countPop(11)
+    let e3 = _BitOps.countPop(15)
+    h.expect_eq[U32](e0, 3)
+    h.expect_eq[U32](e1, 1)
+    h.expect_eq[U32](e2, 3)
+    h.expect_eq[U32](e3, 4)
+
+    true
+
+class iso _TestHAMTMap is UnitTest
+  fun name(): String => "hamt/Map"
+
+  fun apply(h: TestHelper): TestResult ? =>
+    let m1: Map[U32] = MapNode[U32].empty()
+    let v1 = m1.get("a")
+    let v1b = m1("b")
+    let s1 = m1.size()
+    h.expect_eq[Bool](isNone(v1), true)
+    h.expect_eq[Bool](isValue(v1, 0), false)
+    h.expect_eq[Bool](isNone(v1b), true)
+    h.expect_eq[Bool](isValue(v1b, 0), false)
+    h.expect_eq[U64](s1, 0)
+    h.expect_eq[Bool](m1.is_leaf(), false)
+
+    let m2 = m1.put("a", 5)
+    let m3 = m2.put("b", 10)
+    let m4 = m3.put("a", 4)
+    let m5 = m4.put("c", 0)
+
+    h.expect_eq[Bool](isValue(m2.get("a"), 5), true)
+    h.expect_eq[Bool](isValue(m3.get("b"), 10), true)
+    h.expect_eq[Bool](isValue(m4.get("a"), 4), true)
+    h.expect_eq[Bool](isValue(m5.get("c"), 0), true)
+    h.expect_eq[Bool](isNone(m5.get("d")), true)
+
+    true
+
+  fun isValue(v: (U32 | None), value: U32): Bool =>
+    match v
+    | None => false
+    | let x: U32 => x == value
+    else
+      false
+    end
+
+  fun isNone(v: (U32 | None)): Bool =>
+    match v
+    | None => true
+    else
+      false
+    end
