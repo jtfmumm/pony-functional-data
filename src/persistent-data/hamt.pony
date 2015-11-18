@@ -89,7 +89,7 @@ class val MultiLeafNode[V: Any val] is Map[V]
       end
 
     if (_entries.exists(test)) then
-      _updateEntry(k, v, _entries, ListT.empty[Entry[V]]())
+      _updateEntry(k, v, _entries, Lists.empty[Entry[V]]())
     else
       MultiLeafNode[V](_entries.prepend(Entry[V](k, v)))
     end

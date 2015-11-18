@@ -26,9 +26,9 @@ class iso _TestPrepend is UnitTest
   fun name(): String => "persistent-data/List/prepend()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let a = ListT.empty[U32]()
-    let b = ListT.cons[U32](1, ListT.empty[U32]())
-    let c = ListT.cons[U32](2, b)
+    let a = Lists.empty[U32]()
+    let b = Lists.cons[U32](1, Lists.empty[U32]())
+    let c = Lists.cons[U32](2, b)
     let d = c.prepend(3)
     let e = a.prepend(10)
 
@@ -50,10 +50,10 @@ class iso _TestPrepend is UnitTest
     true
 
 class iso _TestFrom is UnitTest
-  fun name(): String => "persistent-data/ListT/from()"
+  fun name(): String => "persistent-data/Lists/from()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let l1 = ListT.from[U32]([1, 2, 3])
+    let l1 = Lists.from[U32]([1, 2, 3])
     h.expect_eq[U64](l1.size(), 3)
     try h.expect_eq[U32](l1.head(), 1) else error end
 
@@ -63,69 +63,69 @@ class iso _TestConcat is UnitTest
   fun name(): String => "persistent-data/List/concat()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let l1 = ListT.from[U32]([1, 2, 3])
-    let l2 = ListT.from[U32]([4, 5, 6])
+    let l1 = Lists.from[U32]([1, 2, 3])
+    let l2 = Lists.from[U32]([4, 5, 6])
     let l3 = l1.concat(l2)
     let l4 = l3.reverse()
     h.expect_eq[U64](l3.size(), 6)
-    try h.expect_true(ListT.eq[U32](l3, ListT.from[U32]([1,2,3,4,5,6]))) else error end
-    try h.expect_true(ListT.eq[U32](l4, ListT.from[U32]([6,5,4,3,2,1]))) else error end
+    try h.expect_true(Lists.eq[U32](l3, Lists.from[U32]([1,2,3,4,5,6]))) else error end
+    try h.expect_true(Lists.eq[U32](l4, Lists.from[U32]([6,5,4,3,2,1]))) else error end
 
     true
 
 class iso _TestMap is UnitTest
-  fun name(): String => "persistent-data/ListT/map()"
+  fun name(): String => "persistent-data/Lists/map()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let l5 = ListT.from[U32]([1, 2, 3]).map[U32](lambda(x: U32): U32 => x * 2 end)
-    try h.expect_true(ListT.eq[U32](l5, ListT.from[U32]([2,4,6]))) else error end
+    let l5 = Lists.from[U32]([1, 2, 3]).map[U32](lambda(x: U32): U32 => x * 2 end)
+    try h.expect_true(Lists.eq[U32](l5, Lists.from[U32]([2,4,6]))) else error end
 
     true
 
 class iso _TestFlatMap is UnitTest
-  fun name(): String => "persistent-data/ListT/flat_map()"
+  fun name(): String => "persistent-data/Lists/flat_map()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let f = lambda(x: U32): List[U32] => ListT.from[U32]([x - 1, x, x + 1]) end
-    let l6 = ListT.from[U32]([2, 5, 8]).flat_map[U32](f)
-    try h.expect_true(ListT.eq[U32](l6, ListT.from[U32]([1,2,3,4,5,6,7,8,9]))) else error end
+    let f = lambda(x: U32): List[U32] => Lists.from[U32]([x - 1, x, x + 1]) end
+    let l6 = Lists.from[U32]([2, 5, 8]).flat_map[U32](f)
+    try h.expect_true(Lists.eq[U32](l6, Lists.from[U32]([1,2,3,4,5,6,7,8,9]))) else error end
 
     true
 
 class iso _TestFilter is UnitTest
-  fun name(): String => "persistent-data/ListT/filter()"
+  fun name(): String => "persistent-data/Lists/filter()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let is_even = lambda(x: U32): Bool => x % 2 == 0 end
-    let l7 = ListT.from[U32]([1,2,3,4,5,6,7,8]).filter(is_even)
-    try h.expect_true(ListT.eq[U32](l7, ListT.from[U32]([2,4,6,8]))) else error end
+    let l7 = Lists.from[U32]([1,2,3,4,5,6,7,8]).filter(is_even)
+    try h.expect_true(Lists.eq[U32](l7, Lists.from[U32]([2,4,6,8]))) else error end
 
     true
 
 class iso _TestFold is UnitTest
-  fun name(): String => "persistent-data/ListT/fold()"
+  fun name(): String => "persistent-data/Lists/fold()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let add = lambda(acc: U32, x: U32): U32 => acc + x end
-    let value = ListT.from[U32]([1,2,3]).fold[U32](add, 0)
+    let value = Lists.from[U32]([1,2,3]).fold[U32](add, 0)
     h.expect_eq[U32](value, 6)
 
     let doubleAndPrepend = lambda(acc: List[U32], x: U32): List[U32] => acc.prepend(x * 2) end
-    let l8 = ListT.from[U32]([1,2,3]).fold[List[U32]](doubleAndPrepend, ListT.empty[U32]())
-    try h.expect_true(ListT.eq[U32](l8, ListT.from[U32]([6,4,2]))) else error end
+    let l8 = Lists.from[U32]([1,2,3]).fold[List[U32]](doubleAndPrepend, Lists.empty[U32]())
+    try h.expect_true(Lists.eq[U32](l8, Lists.from[U32]([6,4,2]))) else error end
 
     true
 
 class iso _TestEveryExists is UnitTest
-  fun name(): String => "persistent-data/ListT/every()exists()"
+  fun name(): String => "persistent-data/Lists/every()exists()"
 
   fun apply(h: TestHelper): TestResult =>
     let is_even = lambda(x: U32): Bool => x % 2 == 0 end
-    let l9 = ListT.from[U32]([4,2,10])
-    let l10 = ListT.from[U32]([1,1,3])
-    let l11 = ListT.from[U32]([1,1,2])
-    let l12 = ListT.from[U32]([2,2,3])
-    let l13 = ListT.empty[U32]()
+    let l9 = Lists.from[U32]([4,2,10])
+    let l10 = Lists.from[U32]([1,1,3])
+    let l11 = Lists.from[U32]([1,1,2])
+    let l12 = Lists.from[U32]([2,2,3])
+    let l13 = Lists.empty[U32]()
     h.expect_eq[Bool](l9.every(is_even), true)
     h.expect_eq[Bool](l10.every(is_even), false)
     h.expect_eq[Bool](l11.every(is_even), false)
@@ -140,14 +140,14 @@ class iso _TestEveryExists is UnitTest
     true
 
 class iso _TestPartition is UnitTest
-  fun name(): String => "persistent-data/ListT/partition()"
+  fun name(): String => "persistent-data/Lists/partition()"
 
   fun apply(h: TestHelper): TestResult ? =>
     let is_even = lambda(x: U32): Bool => x % 2 == 0 end
-    let l = ListT.from[U32]([1,2,3,4,5,6])
+    let l = Lists.from[U32]([1,2,3,4,5,6])
     (let hits, let misses) = l.partition(is_even)
-    try h.expect_true(ListT.eq[U32](hits, ListT.from[U32]([2,4,6]))) else error end
-    try h.expect_true(ListT.eq[U32](misses, ListT.from[U32]([1,3,5]))) else error end
+    try h.expect_true(Lists.eq[U32](hits, Lists.from[U32]([2,4,6]))) else error end
+    try h.expect_true(Lists.eq[U32](misses, Lists.from[U32]([1,3,5]))) else error end
 
     true
 
@@ -155,12 +155,12 @@ class iso _TestDrop is UnitTest
   fun name(): String => "persistent-data/List/drop()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let l = ListT.from[String](["a","b","c","d","e"])
-    let l2 = ListT.from[U32]([1,2])
-    let empty = ListT.empty[String]()
-    try h.expect_true(ListT.eq[String](l.drop(3), ListT.from[String](["d","e"]))) else error end
-    try h.expect_true(ListT.eq[U32](l2.drop(3), ListT.empty[U32]())) else error end
-    try h.expect_true(ListT.eq[String](empty.drop(3), ListT.empty[String]())) else error end
+    let l = Lists.from[String](["a","b","c","d","e"])
+    let l2 = Lists.from[U32]([1,2])
+    let empty = Lists.empty[String]()
+    try h.expect_true(Lists.eq[String](l.drop(3), Lists.from[String](["d","e"]))) else error end
+    try h.expect_true(Lists.eq[U32](l2.drop(3), Lists.empty[U32]())) else error end
+    try h.expect_true(Lists.eq[String](empty.drop(3), Lists.empty[String]())) else error end
     true
 
 class iso _TestDropWhile is UnitTest
@@ -168,22 +168,22 @@ class iso _TestDropWhile is UnitTest
 
   fun apply(h: TestHelper): TestResult ? =>
     let is_even = lambda(x: U32): Bool => x % 2 == 0 end
-    let l = ListT.from[U32]([4,2,6,1,3,4,6])
-    let empty = ListT.empty[U32]()
-    try h.expect_true(ListT.eq[U32](l.drop_while(is_even), ListT.from[U32]([1,3,4,6]))) else error end
-    try h.expect_true(ListT.eq[U32](empty.drop_while(is_even), ListT.empty[U32]())) else error end
+    let l = Lists.from[U32]([4,2,6,1,3,4,6])
+    let empty = Lists.empty[U32]()
+    try h.expect_true(Lists.eq[U32](l.drop_while(is_even), Lists.from[U32]([1,3,4,6]))) else error end
+    try h.expect_true(Lists.eq[U32](empty.drop_while(is_even), Lists.empty[U32]())) else error end
     true
 
 class iso _TestTake is UnitTest
   fun name(): String => "persistent-data/List/take()"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let l = ListT.from[String](["a","b","c","d","e"])
-    let l2 = ListT.from[U32]([1,2])
-    let empty = ListT.empty[String]()
-    try h.expect_true(ListT.eq[String](l.take(3), ListT.from[String](["a","b","c"]))) else error end
-    try h.expect_true(ListT.eq[U32](l2.take(3), ListT.from[U32]([1,2]))) else error end
-    try h.expect_true(ListT.eq[String](empty.take(3), ListT.empty[String]())) else error end
+    let l = Lists.from[String](["a","b","c","d","e"])
+    let l2 = Lists.from[U32]([1,2])
+    let empty = Lists.empty[String]()
+    try h.expect_true(Lists.eq[String](l.take(3), Lists.from[String](["a","b","c"]))) else error end
+    try h.expect_true(Lists.eq[U32](l2.take(3), Lists.from[U32]([1,2]))) else error end
+    try h.expect_true(Lists.eq[String](empty.take(3), Lists.empty[String]())) else error end
     true
 
 class iso _TestTakeWhile is UnitTest
@@ -191,10 +191,10 @@ class iso _TestTakeWhile is UnitTest
 
   fun apply(h: TestHelper): TestResult ? =>
     let is_even = lambda(x: U32): Bool => x % 2 == 0 end
-    let l = ListT.from[U32]([4,2,6,1,3,4,6])
-    let empty = ListT.empty[U32]()
-    try h.expect_true(ListT.eq[U32](l.take_while(is_even), ListT.from[U32]([4,2,6]))) else error end
-    try h.expect_true(ListT.eq[U32](empty.take_while(is_even), ListT.empty[U32]())) else error end
+    let l = Lists.from[U32]([4,2,6,1,3,4,6])
+    let empty = Lists.empty[U32]()
+    try h.expect_true(Lists.eq[U32](l.take_while(is_even), Lists.from[U32]([4,2,6]))) else error end
+    try h.expect_true(Lists.eq[U32](empty.take_while(is_even), Lists.empty[U32]())) else error end
     true
 
 

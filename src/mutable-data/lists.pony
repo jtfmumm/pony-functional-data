@@ -1,7 +1,7 @@
 use "collections"
 use "../function-types"
 
-primitive MListT
+primitive Lists
   fun unit[A](a: A): List[A] => List[A].push(consume a)
 
   fun map[A: Any #read, B](l: List[A], f: Fn1[A!, B^]): List[B] =>

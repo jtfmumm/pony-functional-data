@@ -24,7 +24,7 @@ Currently has the following methods:
   fun put(k: String, v: V): Map[V] ?  
 ```
 
-## persistent-data/List
+## persistent-data/List, Lists
 
 Immutable linked list with the following methods:
 ```
@@ -68,7 +68,7 @@ Immutable linked list with the following methods:
 
 ```
 
-There is also a primitive called ListT with helper methods:
+There is also a primitive called Lists with helper methods:
 ```
   //Returns empty List of As
   empty[A: Any val](): List[A]
@@ -87,7 +87,7 @@ There is also a primitive called ListT with helper methods:
 
 ```
 
-## list-transforms/MListT
+## mutable-data/Lists
 
 Helper methods for the "collections" package mutable List
 
