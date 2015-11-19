@@ -266,13 +266,23 @@ class iso _TestBitOps is UnitTest
     h.expect_eq[U32](e2, 3)
     h.expect_eq[U32](e3, 4)
 
+    //1100 00011 11101 01001 10111 or 12711223
+    let f0 = _BitOps.arrayIdxFor(12711223, 0)
+    let f1 = _BitOps.arrayIdxFor(12711223, 5)
+    let f2 = _BitOps.arrayIdxFor(12711223, 10)
+    let f3 = _BitOps.arrayIdxFor(12711223, 25)
+    h.expect_eq[U64](f0, 0)
+    h.expect_eq[U64](f1, 4)
+    h.expect_eq[U64](f2, 6)
+    h.expect_eq[U64](f3, 14)
+
     true
 
 class iso _TestHAMTMap is UnitTest
   fun name(): String => "hamt/Map"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let m1: Map[U32] = MapNode[U32].empty()
+    let m1: Map[U32] = Maps.empty[U32]()
     let v1 = m1.get("a")
     let v1b = m1("b")
     let s1 = m1.size()
@@ -281,7 +291,6 @@ class iso _TestHAMTMap is UnitTest
     h.expect_eq[Bool](isNone(v1b), true)
     h.expect_eq[Bool](isValue(v1b, 0), false)
     h.expect_eq[U64](s1, 0)
-    h.expect_eq[Bool](m1.is_leaf(), false)
 
     let m2 = m1.put("a", 5)
     let m3 = m2.put("b", 10)
@@ -293,6 +302,15 @@ class iso _TestHAMTMap is UnitTest
     h.expect_eq[Bool](isValue(m4.get("a"), 4), true)
     h.expect_eq[Bool](isValue(m5.get("c"), 0), true)
     h.expect_eq[Bool](isNone(m5.get("d")), true)
+    
+    let m6 = Maps.from[U32]([("a", 2), ("b", 3), ("d", 4), ("e", 5)])
+    let m7 = m6.put("a", 10)
+    h.expect_eq[Bool](isValue(m6.get("a"), 2), true)
+    h.expect_eq[Bool](isValue(m6.get("b"), 3), true)
+    h.expect_eq[Bool](isValue(m6.get("d"), 4), true)
+    h.expect_eq[Bool](isValue(m6.get("e"), 5), true)
+    h.expect_eq[Bool](isValue(m7.get("a"), 10), true)
+    h.expect_eq[Bool](isValue(m7.get("b"), 3), true)
 
     true
 

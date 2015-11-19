@@ -24,6 +24,15 @@ Currently has the following methods:
   fun put(k: String, v: V): Map[V] ?  
 ```
 
+There is also a primitive called Maps with helper methods:
+```
+  //Creates an empty Map
+  empty[V](): Map[V]
+
+  //Creates a Map from an array of tuples (k, v)
+  from[V](arr: Array[(String, V)]): Map[V]  
+```
+
 ## persistent-data/List, Lists
 
 Immutable linked list with the following methods:

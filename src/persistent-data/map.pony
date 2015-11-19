@@ -1,6 +1,8 @@
+use "debug"
+
 trait val Map[V: Any val]
   fun size(): U64
-  fun is_leaf(): Bool
+  fun _is_leaf(): Bool
   fun apply(k: String): (V | None) ? => get(k)
   fun get(k: String): (V | None) ?
 //  fun getOption(k: String): Option[V] ? =>
@@ -10,6 +12,17 @@ trait val Map[V: Any val]
   fun put(k: String, v: V): Map[V] ?
   fun _putWithHash(k: String, v: V, hash: U32, level: U32): Map[V] ?
 
+primitive Maps
+  fun val empty[V: Any val](): Map[V] => MapNode[V].empty()
+  fun val from[V: Any val](pairs: Array[(String, V)]): Map[V] ? =>
+    var newMap = empty[V]()
+    var count: U64 = 0
+    while(count < pairs.size()) do
+      (let k, let v) = pairs(count)
+      newMap = newMap.put(k, v)
+      count = count + 1
+    end
+    newMap
 
 class val LeafNode[V: Any val] is Map[V]
   let _key: String
@@ -21,7 +34,7 @@ class val LeafNode[V: Any val] is Map[V]
 
   fun size(): U64 => 1
 
-  fun is_leaf(): Bool => true
+  fun _is_leaf(): Bool => true
 
   fun get(k: String): (V | None) =>
     if (k == _key) then _value else None end
@@ -41,6 +54,7 @@ class val LeafNode[V: Any val] is Map[V]
 
   fun _putWithHash(k: String, v: V, hash: U32, level: U32): Map[V] ? =>
     if (k == _key) then
+      Debug.out("******>>>>> " + k + " " + _key)
       LeafNode[V](k, v) as Map[V]
     else
       let tempNode = MapNode[V].empty()._putWithHash(_key, _value, hash, level + 1)
@@ -64,7 +78,7 @@ class val MultiLeafNode[V: Any val] is Map[V]
 
   fun size(): U64 => _entries.size()
 
-  fun is_leaf(): Bool => true
+  fun _is_leaf(): Bool => true
 
   fun get(k: String): (V | None) =>
     try
@@ -129,7 +143,7 @@ class val MapNode[V: Any val] is Map[V]
 
   fun size(): U64 => _size
 
-  fun is_leaf(): Bool => false
+  fun _is_leaf(): Bool => false
 
   fun get(k: String): (V | None) ? =>
     let hash = _hash(k)
@@ -141,7 +155,7 @@ class val MapNode[V: Any val] is Map[V]
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
     if (_BitOps.checkIdxBit(_bitmap, bmapIdx)) then
       let arrayIdx = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
-      _pointers(arrayIdx.u64())._getWithHash(k, hash, level + 1)
+      _pointers(arrayIdx)._getWithHash(k, hash, level + 1)
     else
       None
     end
@@ -156,7 +170,9 @@ class val MapNode[V: Any val] is Map[V]
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
     let arrayIdx: U64 = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
     if (_BitOps.checkIdxBit(_bitmap, bmapIdx)) then
-      _pointers(arrayIdx)._putWithHash(k, v, hash, level + 1)
+      let newNode = _pointers(arrayIdx)._putWithHash(k, v, hash, level + 1)
+      let newArray = _overwriteInArrayAt(_pointers, newNode, arrayIdx)
+      MapNode[V](_bitmap, newArray)
     else
       let newBitMap = _BitOps.flipIndexedBitOn(_bitmap, bmapIdx)
       let newNode = LeafNode[V](k, v)
@@ -168,11 +184,26 @@ class val MapNode[V: Any val] is Map[V]
 
   fun _insertInArrayAt(arr: Array[Map[V]] val, node: Map[V], idx: U64): Array[Map[V]] val ? =>
     var belowArr: U64 = 0
+    var aboveArr = idx
+    let newArray: Array[Map[V]] trn = recover trn Array[Map[V]] end
+    while(belowArr < idx) do
+      newArray.push(arr(belowArr))
+      belowArr = belowArr + 1
+    end
+    newArray.push(node)
+    while(aboveArr < arr.size()) do
+      newArray.push(arr(aboveArr))
+      aboveArr = aboveArr + 1
+    end
+    consume newArray
+
+  fun _overwriteInArrayAt(arr: Array[Map[V]] val, node: Map[V], idx: U64): Array[Map[V]] val ? =>
+    var belowArr: U64 = 0
     var aboveArr = idx + 1
     let newArray: Array[Map[V]] trn = recover trn Array[Map[V]] end
     while(belowArr < idx) do
       newArray.push(arr(belowArr))
-      belowArr = belowArr - 1
+      belowArr = belowArr + 1
     end
     newArray.push(node)
     while(aboveArr < arr.size()) do
@@ -193,7 +224,9 @@ primitive _BitOps
 
   fun countPop(n: U32): U32 => @"llvm.ctpop.i32"[U32](n)
 
-  fun arrayIdxFor(bmap: U32, idx: U32): U64 => countPop(idx and bmap).u64()
+  fun arrayIdxFor(bmap: U32, idx: U32): U64 =>
+   let mask = not(4294967295 << idx)
+    (countPop(mask and bmap)).u64()
 
   fun flipIndexedBitOn(bmap: U32, idx: U32): U32 => (1 << idx) or bmap
 
