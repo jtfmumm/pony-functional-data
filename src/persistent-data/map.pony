@@ -54,7 +54,6 @@ class val LeafNode[V: Any val] is Map[V]
 
   fun _putWithHash(k: String, v: V, hash: U32, level: U32): Map[V] ? =>
     if (k == _key) then
-      Debug.out("******>>>>> " + k + " " + _key)
       LeafNode[V](k, v) as Map[V]
     else
       let tempNode = MapNode[V].empty()._putWithHash(_key, _value, hash, level + 1)
