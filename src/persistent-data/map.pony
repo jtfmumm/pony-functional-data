@@ -23,6 +23,7 @@ primitive Maps
       count = count + 1
     end
     newMap
+  fun _last_level(): U32 => 4
 
 class val LeafNode[V: Any val] is Map[V]
   let _key: String
@@ -165,7 +166,7 @@ class val MapNode[V: Any val] is Map[V]
     _putWithHash(k, v, hash, level)
 
   fun _putWithHash(k: String, v: V, hash: U32, level: U32): Map[V] ? =>
-    //if level is greater than (32 / 5) then rehash
+    if (level >= Maps._last_level()) then return _lastLevelPutWithHash(k, v, hash) end
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
     let arrayIdx: U64 = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
     if (_BitOps.checkIdxBit(_bitmap, bmapIdx)) then
@@ -175,6 +176,21 @@ class val MapNode[V: Any val] is Map[V]
     else
       let newBitMap = _BitOps.flipIndexedBitOn(_bitmap, bmapIdx)
       let newNode = LeafNode[V](k, v)
+      let newArray = _insertInArrayAt(_pointers, newNode, arrayIdx)
+      MapNode[V](newBitMap, newArray)
+    end
+
+  fun _lastLevelPutWithHash(k: String, v: V, hash: U32): Map[V] ? =>
+    let bmapIdx = _BitOps.bitmapIdxFor(hash, Maps._last_level())
+    let arrayIdx: U64 = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
+    if (_BitOps.checkIdxBit(_bitmap, bmapIdx)) then
+      let newNode = _pointers(arrayIdx).put(k, v)
+      let newArray = _overwriteInArrayAt(_pointers, newNode, arrayIdx)
+      MapNode[V](_bitmap, newArray)
+    else
+      let newBitMap = _BitOps.flipIndexedBitOn(_bitmap, bmapIdx)
+      let newEntry = Entry[V](k, v)
+      let newNode = MultiLeafNode[V](Lists.from[Entry[V]]([newEntry]))
       let newArray = _insertInArrayAt(_pointers, newNode, arrayIdx)
       MapNode[V](newBitMap, newArray)
     end
@@ -224,6 +240,7 @@ primitive _BitOps
   fun countPop(n: U32): U32 => @"llvm.ctpop.i32"[U32](n)
 
   fun arrayIdxFor(bmap: U32, idx: U32): U64 =>
+   // Using 0xFFFFFFFF to generate mask
    let mask = not(4294967295 << idx)
     (countPop(mask and bmap)).u64()
 

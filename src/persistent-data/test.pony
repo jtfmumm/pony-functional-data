@@ -1,5 +1,8 @@
 use "ponytest"
 use "../function-types"
+use mut = "collections"
+use "random"
+use "debug"
 
 actor Main is TestList
   new create(env: Env) => PonyTest(env, this)
@@ -21,6 +24,7 @@ actor Main is TestList
     test(_TestTakeWhile)
     test(_TestBitOps)
     test(_TestHAMTMap)
+    test(_TestMapVsMap)
 
 class iso _TestPrepend is UnitTest
   fun name(): String => "persistent-data/List/prepend()"
@@ -199,7 +203,7 @@ class iso _TestTakeWhile is UnitTest
 
 
 class iso _TestBitOps is UnitTest
-  fun name(): String => "hamt/_BitOps"
+  fun name(): String => "persistent-data/_BitOps"
 
   fun apply(h: TestHelper): TestResult =>
     let a = _BitOps.maskLow(845)
@@ -279,17 +283,17 @@ class iso _TestBitOps is UnitTest
     true
 
 class iso _TestHAMTMap is UnitTest
-  fun name(): String => "hamt/Map"
+  fun name(): String => "persistent-data/Map"
 
   fun apply(h: TestHelper): TestResult ? =>
     let m1: Map[U32] = Maps.empty[U32]()
     let v1 = m1.get("a")
     let v1b = m1("b")
     let s1 = m1.size()
-    h.expect_eq[Bool](isNone(v1), true)
-    h.expect_eq[Bool](isValue(v1, 0), false)
-    h.expect_eq[Bool](isNone(v1b), true)
-    h.expect_eq[Bool](isValue(v1b, 0), false)
+    h.expect_eq[Bool](H.isNone(v1), true)
+    h.expect_eq[Bool](H.isValue(v1, 0), false)
+    h.expect_eq[Bool](H.isNone(v1b), true)
+    h.expect_eq[Bool](H.isValue(v1b, 0), false)
     h.expect_eq[U64](s1, 0)
 
     let m2 = m1.put("a", 5)
@@ -297,23 +301,62 @@ class iso _TestHAMTMap is UnitTest
     let m4 = m3.put("a", 4)
     let m5 = m4.put("c", 0)
 
-    h.expect_eq[Bool](isValue(m2.get("a"), 5), true)
-    h.expect_eq[Bool](isValue(m3.get("b"), 10), true)
-    h.expect_eq[Bool](isValue(m4.get("a"), 4), true)
-    h.expect_eq[Bool](isValue(m5.get("c"), 0), true)
-    h.expect_eq[Bool](isNone(m5.get("d")), true)
+    h.expect_eq[Bool](H.isValue(m2.get("a"), 5), true)
+    h.expect_eq[Bool](H.isValue(m3.get("b"), 10), true)
+    h.expect_eq[Bool](H.isValue(m4.get("a"), 4), true)
+    h.expect_eq[Bool](H.isValue(m5.get("c"), 0), true)
+    h.expect_eq[Bool](H.isNone(m5.get("d")), true)
     
     let m6 = Maps.from[U32]([("a", 2), ("b", 3), ("d", 4), ("e", 5)])
     let m7 = m6.put("a", 10)
-    h.expect_eq[Bool](isValue(m6.get("a"), 2), true)
-    h.expect_eq[Bool](isValue(m6.get("b"), 3), true)
-    h.expect_eq[Bool](isValue(m6.get("d"), 4), true)
-    h.expect_eq[Bool](isValue(m6.get("e"), 5), true)
-    h.expect_eq[Bool](isValue(m7.get("a"), 10), true)
-    h.expect_eq[Bool](isValue(m7.get("b"), 3), true)
+    h.expect_eq[Bool](H.isValue(m6.get("a"), 2), true)
+    h.expect_eq[Bool](H.isValue(m6.get("b"), 3), true)
+    h.expect_eq[Bool](H.isValue(m6.get("d"), 4), true)
+    h.expect_eq[Bool](H.isValue(m6.get("e"), 5), true)
+    h.expect_eq[Bool](H.isValue(m7.get("a"), 10), true)
+    h.expect_eq[Bool](H.isValue(m7.get("b"), 3), true)
 
     true
 
+class iso _TestMapVsMap is UnitTest
+  fun name(): String => "persistent-data/Map vs. collections Map"
+
+  fun apply(h: TestHelper): TestResult ? =>
+    var pMap: Map[U64] = Maps.empty[U64]()
+    let mMap: mut.Map[String,U64] = mut.Map[String,U64]()
+    let kvs = Array[(String,U64)]()
+    let dice = Dice(MT)
+    var count: U64 = 0
+
+    while(count < 100000) do
+      let k0 = dice(1,100).string()
+      let k: String val = consume k0
+      let v = dice(1,100000)
+      kvs.push((k, v))
+      count = count + 1
+    end
+
+    count = 0
+    while(count < 100000) do
+      let k = kvs(count)._1
+      let v = kvs(count)._2
+      pMap = pMap.put(k, v)
+      mMap.update(k, v)
+      count = count + 1
+    end
+    count = 0
+    while(count < 100000) do
+      let pmv = pMap.get(kvs(count)._1)
+      let mmv = mMap(kvs(count)._1)
+      h.expect_eq[Bool](H.equalMapU64Values(pmv, mmv), true)
+      count = count + 1
+    end
+
+    true
+
+
+
+primitive H
   fun isValue(v: (U32 | None), value: U32): Bool =>
     match v
     | None => false
@@ -326,5 +369,22 @@ class iso _TestHAMTMap is UnitTest
     match v
     | None => true
     else
+      false
+    end
+
+  fun equalMapU64Values(a: (U64 | None), b: (U64 | None)): Bool =>
+    match (a,b)
+    | (None,None) => true
+    | (None,_) =>
+      Debug.out(a.string() + " != " + b.string())
+      false
+    | (_,None) =>
+      Debug.out(a.string() + " != " + b.string())
+      false
+    | (let x: U64, let y: U64) =>
+      if (x != y) then Debug.out(a.string() + " != " + b.string()) end
+      x == y
+    else
+      Debug.out(a.string() + " != " + b.string())
       false
     end
