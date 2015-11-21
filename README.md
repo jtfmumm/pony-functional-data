@@ -101,6 +101,26 @@ There is also a primitive called Lists with helper methods:
 
 ```
 
+## persistent-data/Option
+
+An Option[V] is either an ONone[V] or an OSome[V]
+
+Currently has the following methods:
+```
+  is_empty(): Bool
+
+  is_non_empty(): Bool
+
+  value(): V ?
+
+  map[B: Any val](f: Fn1[V!,B^]): Option[B] ?
+
+  flat_map[B: Any val](f: Fn1[V!,Option[B]]): Option[B] ?
+
+  filter(f: Fn1[V!,Bool]): Option[V] ?
+```
+
+
 ## mutable-data/Lists
 
 Helper methods for the "collections" package mutable List

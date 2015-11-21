@@ -2,6 +2,7 @@ use "../function-types"
 
 trait val Option[V: Any val]
   fun is_empty(): Bool
+  fun is_non_empty(): Bool => not(is_empty())
   fun value(): V ?
   fun map[B: Any val](f: Fn1[V!,B^]): Option[B] ?
   fun flat_map[B: Any val](f: Fn1[V!,Option[B]]): Option[B] ?
