@@ -11,13 +11,13 @@ Currently has the following methods:
 ```
   fun size(): U64  
     
-  fun apply(k: String): (V | None) ?  
+  fun apply(k: K): (V | None) ?
     
-  fun get(k: String): (V | None) ?
+  fun get(k: K): (V | None) ?
 
-  fun getOption(k: String): Option[V] ?
+  fun getOption(k: K): Option[V] ?
     
-  fun put(k: String, v: V): Map[V] ?  
+  fun put(k: K, v: V): Map[V] ?
 ```
 
 There is also a primitive called Maps with helper methods:
