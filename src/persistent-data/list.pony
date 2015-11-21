@@ -11,6 +11,7 @@ trait val List[A: Any val]
   fun val concat(l: List[A]): List[A]
   fun map[B: Any val](f: Fn1[A!,B^]): List[B]
   fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B]
+  fun foreach(f: SeFn1[A!])
   fun filter(f: Fn1[A!, Bool]): List[A]
   fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B
   fun every(f: Fn1[A!,Bool]): Bool
@@ -41,6 +42,8 @@ class val LNil[A: Any val] is List[A]
   fun map[B: Any val](f: Fn1[A!,B^]): List[B] => Lists.empty[B]()
 
   fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B] => Lists.empty[B]()
+
+  fun foreach(f: SeFn1[A!]) => None
 
   fun filter(f: Fn1[A!, Bool]): List[A] => Lists.empty[A]()
 
@@ -117,6 +120,15 @@ class val LCons[A: Any val] is List[A]
       _flat_map[B](l.tail(), f, Lists._rev_prepend[B](f(l.head()), acc))
     else
       acc.reverse()
+    end
+
+  fun foreach(f: SeFn1[A!]) =>
+    let cur: List[A] = LCons[A](this.head(), this.tail())
+    _foreach(cur, f)
+  fun _foreach(l: List[A], f: SeFn1[A!]) =>
+    try
+      try f(l.head()) end
+      _foreach(l.tail(), f)
     end
 
   fun filter(f: Fn1[A!, Bool]): List[A] =>
