@@ -23,10 +23,10 @@ Currently has the following methods:
 There is also a primitive called Maps with helper methods:
 ```
   //Creates an empty Map
-  empty[V](): Map[V]
+  empty[V](): Map[K,V]
 
   //Creates a Map from an array of tuples (k, v)
-  from[V](arr: Array[(String, V)]): Map[V]  
+  from[K,V](arr: Array[(K, V)]): Map[K,V]
 ```
 
 ## persistent-data/List, Lists
