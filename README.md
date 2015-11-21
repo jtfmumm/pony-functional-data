@@ -9,6 +9,8 @@ Clojure persistent maps (using path copying for sharing structure).
 
 Currently has the following methods:
 ```
+  (For K: (Hashable val & Equatable[K] val) and V: Any val)
+
   fun size(): U64  
     
   fun apply(k: K): (V | None) ?
