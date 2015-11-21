@@ -19,7 +19,9 @@ Currently has the following methods:
     
   fun apply(k: String): (V | None) ?  
     
-  fun get(k: String): (V | None) ?  
+  fun get(k: String): (V | None) ?
+
+  fun getOption(k: String): Option[V] ?
     
   fun put(k: String, v: V): Map[V] ?  
 ```
@@ -56,6 +58,8 @@ Immutable linked list with the following methods:
   map[B: Any val](f: Fn1[A!,B^]): List[B]
 
   flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B]
+
+  for_each(f: SeFn1[A!])
 
   filter(f: Fn1[A!, Bool]): List[A]
 
@@ -143,4 +147,7 @@ Provides abstract functional interfaces:
     Fn4[IN1: Any #read,IN2: Any #read,IN3: Any #read,IN4: Any #read,OUT]
 
     Fn5[IN1: Any #read,IN2: Any #read,IN3: Any #read,IN4: Any #read,IN5: Any #read,OUT]  
+
+    // Side effecting function
+    SeFn1[IN1: Any #read]
 ```
