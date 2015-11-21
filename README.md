@@ -35,11 +35,6 @@ There is also a primitive called Maps with helper methods:
 
 Immutable linked list
 
-The current implementations rely on try blocks instead of traditional
-conditional checks when traversing lists. This may not be performant.
-If not, the implementations will be updated and many of these methods
-will become partial functions.
-
 Currently has the following methods:
 ```
   size(): U64
@@ -58,29 +53,29 @@ Currently has the following methods:
 
   concat(l: List[A]): List[A]
 
-  map[B: Any val](f: Fn1[A!,B^]): List[B]
+  map[B: Any val](f: Fn1[A!,B^]): List[B] ?
 
-  flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B]
+  flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B] ?
 
-  for_each(f: SeFn1[A!])
+  for_each(f: SeFn1[A!]) ?
 
-  filter(f: Fn1[A!, Bool]): List[A]
+  filter(f: Fn1[A!, Bool]): List[A] ?
 
-  fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B
+  fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
 
-  every(f: Fn1[A!,Bool]): Bool
+  every(f: Fn1[A!,Bool]): Bool ?
 
-  exists(f: Fn1[A!,Bool]): Bool
+  exists(f: Fn1[A!,Bool]): Bool ?
 
-  partition(f: Fn1[A!,Bool]): (List[A], List[A])
+  partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
 
   drop(n: U64): List[A]
 
-  drop_while(f: Fn1[A!,Bool]): List[A]
+  drop_while(f: Fn1[A!,Bool]): List[A] ?
 
   take(n: U64): List[A]
 
-  take_while(f: Fn1[A!,Bool]): List[A]
+  take_while(f: Fn1[A!,Bool]): List[A] ?
 
 ```
 

@@ -108,7 +108,7 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
 
   fun _getWithHash(k: K, hash: U32, level: U32): (V | None) => get(k)
 
-  fun put(k: K, v: V): Map[K,V] =>
+  fun put(k: K, v: V): Map[K,V] ? =>
     let test =
       object
         let key: K = k
@@ -136,7 +136,7 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
       MultiLeafNode[K,V].from(acc)
     end
 
-  fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] => put(k, v)
+  fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] ? => put(k, v)
 
 class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
   let _size: U64

@@ -74,3 +74,62 @@ primitive Bench
     perf_end = Time.millis()
     Time.perf_end()
     Debug.out("Mutable reads: " + (perf_end - perf_begin).string())
+
+//  fun list_bench(iterations: U64, keys: U64) =>
+//    var list: List[U64] = Lists.empty[U64]()
+//    // Different seed each run
+//    let dice = Dice(MT)
+//    var count: U64 = 0
+//    var perf_begin: U64 = 0
+//    var perf_end: U64 = 0
+//
+//    var l1: List[U64] = Lists.empty[U64]()
+//    var l2: List[U64] = Lists.empty[U64]()
+//    var l3: List[U64] = Lists.empty[U64]()
+//    var l4: List[U64] = Lists.empty[U64]()
+//
+//    while(count < iterations) do
+//      let v: U64 = dice(1,100000)
+//      l1 = l1.prepend(v)
+//      l2 = l2.prepend(v)
+//      l3 = l3.prepend(v)
+//      l4 = l4.prepend(v)
+//      count = count + 1
+//    end
+//
+//    //WRITES
+//    Time.perf_begin()
+//    perf_begin = Time.millis()
+////    l1.reverse()
+////    l2.reverse()
+////    l3.reverse()
+////    l4.reverse()
+////    l1.reverse()
+////    l2.reverse()
+////    l3.reverse()
+////    l4.reverse()
+////    l1.reverse()
+////    l2.reverse()
+////    l3.reverse()
+////    l4.reverse()
+//    perf_end = Time.millis()
+//    Time.perf_end()
+//    Debug.out("TRY: reverse: " + (perf_end - perf_begin).string())
+
+//    Time.perf_begin()
+//    perf_begin = Time.millis()
+////    l1.concat(l2)
+////    l2.concat(l3)
+////    l3.concat(l4)
+////    l4.concat(l1)
+////    l1.concat(l2)
+////    l2.concat(l3)
+////    l3.concat(l4)
+////    l4.concat(l1)
+////    l1.concat(l2)
+////    l2.concat(l3)
+////    l3.concat(l4)
+////    l4.concat(l1)
+//    perf_end = Time.millis()
+//    Time.perf_end()
+//    Debug.out("TRY: concat: " + (perf_end - perf_begin).string())

@@ -9,18 +9,18 @@ trait val List[A: Any val]
   fun val reverse(): List[A]
   fun val prepend(a: A): List[A]
   fun val concat(l: List[A]): List[A]
-  fun map[B: Any val](f: Fn1[A!,B^]): List[B]
-  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B]
-  fun for_each(f: SeFn1[A!])
-  fun filter(f: Fn1[A!, Bool]): List[A]
-  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B
-  fun every(f: Fn1[A!,Bool]): Bool
-  fun exists(f: Fn1[A!,Bool]): Bool
-  fun partition(f: Fn1[A!,Bool]): (List[A], List[A])
+  fun map[B: Any val](f: Fn1[A!,B^]): List[B] ?
+  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B] ?
+  fun for_each(f: SeFn1[A!]) ?
+  fun filter(f: Fn1[A!, Bool]): List[A] ?
+  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
+  fun every(f: Fn1[A!,Bool]): Bool ?
+  fun exists(f: Fn1[A!,Bool]): Bool ?
+  fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
   fun drop(n: U64): List[A]
-  fun drop_while(f: Fn1[A!,Bool]): List[A]
+  fun drop_while(f: Fn1[A!,Bool]): List[A] ?
   fun take(n: U64): List[A]
-  fun take_while(f: Fn1[A!,Bool]): List[A]
+  fun take_while(f: Fn1[A!,Bool]): List[A] ?
 
 class val LNil[A: Any val] is List[A]
   new create() => this
@@ -34,10 +34,12 @@ class val LNil[A: Any val] is List[A]
   fun tail(): List[A] ? => error
 
   fun val reverse(): List[A] => Lists.empty[A]()
+  fun val reverseB(): List[A] => Lists.empty[A]()
 
   fun val prepend(a: A): List[A] => LCons[A](consume a, Lists.empty[A]())
 
   fun val concat(l: List[A]): List[A] => l
+  fun val concatB(l: List[A]): List[A] => l
 
   fun map[B: Any val](f: Fn1[A!,B^]): List[B] => Lists.empty[B]()
 
@@ -86,8 +88,8 @@ class val LCons[A: Any val] is List[A]
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _reverse(cur, Lists.empty[A]())
   fun val _reverse(l: List[A], acc: List[A]): List[A] =>
-    try
-      _reverse(l.tail(), acc.prepend(l.head()))
+    match l
+    | let cons: LCons[A] => _reverse(cons.tail(), acc.prepend(cons.head()))
     else
       acc
     end
@@ -96,72 +98,75 @@ class val LCons[A: Any val] is List[A]
 
   fun val concat(l: List[A]): List[A] => _concat(l, this.reverse())
   fun val _concat(l: List[A], acc: List[A]): List[A] =>
-    try
-      _concat(l.tail(), acc.prepend(l.head()))
+    match l
+    | let cons: LCons[A] => _concat(cons.tail(), acc.prepend(cons.head()))
     else
       acc.reverse()
     end
 
-  fun map[B: Any val](f: Fn1[A!,B^]): List[B] =>
+  fun map[B: Any val](f: Fn1[A!,B^]): List[B] ? =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _map[B](cur, f, Lists.empty[B]())
-  fun _map[B: Any val](l: List[A], f: Fn1[A!,B^], acc: List[B]): List[B] =>
-    try
-      _map[B](l.tail(), f, acc.prepend(f(l.head())))
+  fun _map[B: Any val](l: List[A], f: Fn1[A!,B^], acc: List[B]): List[B] ? =>
+    match l
+    | let cons: LCons[A] => _map[B](cons.tail(), f, acc.prepend(f(cons.head())))
     else
       acc.reverse()
     end
 
-  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B] =>
+  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B] ? =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _flat_map[B](cur, f, Lists.empty[B]())
-  fun _flat_map[B: Any val](l: List[A], f: Fn1[A!,List[B]], acc: List[B]): List[B] =>
-    try
-      _flat_map[B](l.tail(), f, Lists._rev_prepend[B](f(l.head()), acc))
+  fun _flat_map[B: Any val](l: List[A], f: Fn1[A!,List[B]], acc: List[B]): List[B] ? =>
+    match l
+    | let cons: LCons[A] => _flat_map[B](cons.tail(), f, Lists._rev_prepend[B](f(cons.head()), acc))
     else
       acc.reverse()
     end
 
-  fun for_each(f: SeFn1[A!]) =>
+  fun for_each(f: SeFn1[A!]) ? =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _for_each(cur, f)
-  fun _for_each(l: List[A], f: SeFn1[A!]) =>
-    try
-      try f(l.head()) end
-      _for_each(l.tail(), f)
+  fun _for_each(l: List[A], f: SeFn1[A!]) ? =>
+    match l
+    | let cons: LCons[A] =>
+      f(cons.head())
+      _for_each(cons.tail(), f)
     end
 
-  fun filter(f: Fn1[A!, Bool]): List[A] =>
+  fun filter(f: Fn1[A!, Bool]): List[A] ? =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _filter(cur, f, Lists.empty[A]())
-  fun _filter(l: List[A], f: Fn1[A!, Bool], acc: List[A]): List[A] =>
-    try
-      if (f(l.head())) then
-        _filter(l.tail(), f, acc.prepend(l.head()))
-      else
-        _filter(l.tail(), f, acc)
-      end
+  fun _filter(l: List[A], f: Fn1[A!, Bool], acc: List[A]): List[A] ? =>
+    match l
+    | let cons: LCons[A] =>
+        if (f(cons.head())) then
+          _filter(cons.tail(), f, acc.prepend(cons.head()))
+        else
+          _filter(cons.tail(), f, acc)
+        end
     else
       acc.reverse()
     end
 
-  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B =>
+  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ? =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _fold[B](cur, f, acc)
-  fun _fold[B: Any val](l: List[A], f: Fn2[B!,A!,B^], acc: B): B =>
-    try
-      _fold[B](l.tail(), f, f(acc, l.head()))
+  fun _fold[B: Any val](l: List[A], f: Fn2[B!,A!,B^], acc: B): B ? =>
+    match l
+    | let cons: LCons[A] => _fold[B](cons.tail(), f, f(acc, cons.head()))
     else
       acc
     end
 
-  fun every(f: Fn1[A!,Bool]): Bool =>
+  fun every(f: Fn1[A!,Bool]): Bool ? =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _every(cur, f)
-  fun _every(l: List[A], f: Fn1[A!,Bool]): Bool =>
-    try
-      if (f(l.head())) then
-        _every(l.tail(), f)
+  fun _every(l: List[A], f: Fn1[A!,Bool]): Bool ? =>
+    match l
+    | let cons: LCons[A] =>
+      if (f(cons.head())) then
+        _every(cons.tail(), f)
       else
         false
       end
@@ -169,29 +174,31 @@ class val LCons[A: Any val] is List[A]
       true
     end
 
-  fun exists(f: Fn1[A!,Bool]): Bool =>
+  fun exists(f: Fn1[A!,Bool]): Bool ? =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _exists(cur, f)
-  fun _exists(l: List[A], f: Fn1[A!,Bool]): Bool =>
-    try
-      if (f(l.head())) then
+  fun _exists(l: List[A], f: Fn1[A!,Bool]): Bool ? =>
+    match l
+    | let cons: LCons[A] =>
+      if (f(cons.head())) then
         true
       else
-        _exists(l.tail(), f)
+        _exists(cons.tail(), f)
       end
     else
       false
     end
 
-  fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) =>
+  fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) ? =>
     var hits = Lists.empty[A]()
     var misses = Lists.empty[A]()
     var cur: List[A] = LCons[A](this.head(), this.tail())
     while(true) do
-      try
-        let next = cur.head()
+      match cur
+      | let cons: LCons[A] =>
+        let next = cons.head()
         if (f(next)) then hits = hits.prepend(next) else misses = misses.prepend(next) end
-        cur = cur.tail()
+        cur = cons.tail()
       else
         break
       end
@@ -203,16 +210,20 @@ class val LCons[A: Any val] is List[A]
     if cur.size() <= n then return Lists.empty[A]() end
     var count = n
     while(count > 0) do
-      try cur = cur.tail() else return Lists.empty[A]() end
-      count = count - 1
+      match cur
+      | let cons: LCons[A] =>
+        cur = cons.tail()
+        count = count - 1
+      end
     end
     cur
 
-  fun drop_while(f: Fn1[A!,Bool]): List[A] =>
+  fun drop_while(f: Fn1[A!,Bool]): List[A] ? =>
     var cur: List[A] = LCons[A](this.head(), this.tail())
     while(true) do
-      try
-        if f(cur.head()) then cur = cur.tail() else break end
+      match cur
+      | let cons: LCons[A] =>
+        if f(cons.head()) then cur = cons.tail() else break end
       else
         return Lists.empty[A]()
       end
@@ -225,9 +236,10 @@ class val LCons[A: Any val] is List[A]
     var count = n
     var res = Lists.empty[A]()
     while(count > 0) do
-      try
-        res = res.prepend(cur.head())
-        cur = cur.tail()
+      match cur
+      | let cons: LCons[A] =>
+        res = res.prepend(cons.head())
+        cur = cons.tail()
       else
         return res.reverse()
       end
@@ -235,14 +247,15 @@ class val LCons[A: Any val] is List[A]
     end
     res.reverse()
 
-  fun take_while(f: Fn1[A!,Bool]): List[A] =>
+  fun take_while(f: Fn1[A!,Bool]): List[A] ? =>
     var cur: List[A] = LCons[A](this.head(), this.tail())
     var res = Lists.empty[A]()
     while(true) do
-      try
-        if f(cur.head()) then
-          res = res.prepend(cur.head())
-          cur = cur.tail()
+      match cur
+      | let cons: LCons[A] =>
+        if f(cons.head()) then
+          res = res.prepend(cons.head())
+          cur = cons.tail()
         else
           break
         end
@@ -266,16 +279,18 @@ primitive Lists
 
   fun val flatten[T: Any val](l: List[List[T]]): List[T] => _flatten[T](l, Lists.empty[T]())
   fun val _flatten[T: Any val](l: List[List[T]], acc: List[T]): List[T] =>
-    try
-      _flatten[T](l.tail(), _rev_prepend[T](l.head(), acc))
+    match l
+    | let cns: LCons[List[T]] =>
+      _flatten[T](cns.tail(), _rev_prepend[T](cns.head(), acc))
     else
       acc.reverse()
     end
 
   fun val _rev_prepend[T: Any val](l: List[T], target_l: List[T]): List[T] =>
     // Prepends l in reverse order onto targetL
-    try
-      _rev_prepend[T](l.tail(), target_l.prepend(l.head()))
+    match l
+    | let cns: LCons[T] =>
+      _rev_prepend[T](cns.tail(), target_l.prepend(cns.head()))
     else
       target_l
     end

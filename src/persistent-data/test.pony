@@ -41,9 +41,10 @@ class iso _Benchmark is UnitTest
   fun name(): String => "benchmarks"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let iterations: U64 = 1000000
+    let iterations: U64 = 1000
     let keys: U64 = 100000
     Bench.bench(iterations, keys)
+//    Bench.list_bench(iterations, keys)
 
     true
 
@@ -154,7 +155,7 @@ class iso _TestFold is UnitTest
 class iso _TestEveryExists is UnitTest
   fun name(): String => "persistent-data/Lists/every()exists()"
 
-  fun apply(h: TestHelper): TestResult =>
+  fun apply(h: TestHelper): TestResult ? =>
     let is_even = lambda(x: U32): Bool => x % 2 == 0 end
     let l9 = Lists.from[U32]([4,2,10])
     let l10 = Lists.from[U32]([1,1,3])
