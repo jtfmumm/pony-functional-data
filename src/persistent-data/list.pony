@@ -79,7 +79,15 @@ class val LCons[A: Any val] is List[A]
 
   fun tail(): List[A] => _tail //as this->List[A]
 
-  fun val reverse(): List[A] => Lists.reverse[A](this)
+  fun val reverse(): List[A] =>
+    let cur: List[A] = LCons[A](this.head(), this.tail())
+    _reverse(cur, Lists.empty[A]())
+  fun val _reverse(l: List[A], acc: List[A]): List[A] =>
+    try
+      _reverse(l.tail(), acc.prepend(l.head()))
+    else
+      acc
+    end
 
   fun val prepend(a: A): List[A] => LCons[A](consume a, this)
 
@@ -243,14 +251,6 @@ primitive Lists
       lst = lst.prepend(v)
     end
     lst.reverse()
-
-  fun val reverse[T: Any val](l: List[T]): List[T] => _reverse[T](l, Lists.empty[T]())
-  fun val _reverse[T: Any val](l: List[T], acc: List[T]): List[T] =>
-    try
-      _reverse[T](l.tail(), acc.prepend(l.head()))
-    else
-      acc
-    end
 
   fun val flatten[T: Any val](l: List[List[T]]): List[T] => _flatten[T](l, Lists.empty[T]())
   fun val _flatten[T: Any val](l: List[List[T]], acc: List[T]): List[T] =>

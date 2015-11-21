@@ -3,12 +3,22 @@ use "../function-types"
 use mut = "collections"
 use "random"
 use "debug"
+use "benchmarks"
 
 actor Main is TestList
-  new create(env: Env) => PonyTest(env, this)
+  new create(env: Env) =>
+    PonyTest(env, this)
+
   new make() => None
 
   fun tag tests(test: PonyTest) =>
+    run_tests(test)
+//    run_benchmarks(test)
+
+  fun tag run_benchmarks(test: PonyTest) =>
+    test(_Benchmark)
+
+  fun tag run_tests(test: PonyTest) =>
     test(_TestPrepend)
     test(_TestFrom)
     test(_TestConcat)
@@ -25,6 +35,17 @@ actor Main is TestList
     test(_TestBitOps)
     test(_TestHAMTMap)
     test(_TestMapVsMap)
+    test(_TestMapOption)
+
+class iso _Benchmark is UnitTest
+  fun name(): String => "benchmarks"
+
+  fun apply(h: TestHelper): TestResult ? =>
+    let iterations: U64 = 1000000
+    let keys: U64 = 100000
+    Bench.bench(iterations, keys)
+
+    true
 
 class iso _TestPrepend is UnitTest
   fun name(): String => "persistent-data/List/prepend()"
@@ -74,6 +95,16 @@ class iso _TestConcat is UnitTest
     h.expect_eq[U64](l3.size(), 6)
     try h.expect_true(Lists.eq[U32](l3, Lists.from[U32]([1,2,3,4,5,6]))) else error end
     try h.expect_true(Lists.eq[U32](l4, Lists.from[U32]([6,5,4,3,2,1]))) else error end
+
+    let l5 = Lists.empty[U32]()
+    let l6 = l5.reverse()
+    let l7 = l6.concat(l1)
+    h.expect_eq[U64](l6.size(), 0)
+    try h.expect_true(Lists.eq[U32](l7, Lists.from[U32]([1,2,3]))) else error end
+
+    let l8 = Lists.from[U32]([1])
+    let l9 = l8.reverse()
+    try h.expect_true(Lists.eq[U32](l9, Lists.from[U32]([1]))) else error end
 
     true
 
@@ -286,7 +317,7 @@ class iso _TestHAMTMap is UnitTest
   fun name(): String => "persistent-data/Map"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let m1: Map[U32] = Maps.empty[U32]()
+    let m1: Map[String,U32] = Maps.empty[String,U32]()
     let v1 = m1.get("a")
     let v1b = m1("b")
     let s1 = m1.size()
@@ -306,8 +337,8 @@ class iso _TestHAMTMap is UnitTest
     h.expect_eq[Bool](H.isValue(m4.get("a"), 4), true)
     h.expect_eq[Bool](H.isValue(m5.get("c"), 0), true)
     h.expect_eq[Bool](H.isNone(m5.get("d")), true)
-    
-    let m6 = Maps.from[U32]([("a", 2), ("b", 3), ("d", 4), ("e", 5)])
+
+    let m6 = Maps.from[String,U32]([("a", 2), ("b", 3), ("d", 4), ("e", 5)])
     let m7 = m6.put("a", 10)
     h.expect_eq[Bool](H.isValue(m6.get("a"), 2), true)
     h.expect_eq[Bool](H.isValue(m6.get("b"), 3), true)
@@ -322,14 +353,16 @@ class iso _TestMapVsMap is UnitTest
   fun name(): String => "persistent-data/Map vs. collections Map"
 
   fun apply(h: TestHelper): TestResult ? =>
-    var pMap: Map[U64] = Maps.empty[U64]()
+    var pMap: Map[String,U64] = Maps.empty[String,U64]()
     let mMap: mut.Map[String,U64] = mut.Map[String,U64]()
     let kvs = Array[(String,U64)]()
     let dice = Dice(MT)
     var count: U64 = 0
+    let iterations: U64 = 100000
+    let keys: U64 = 10000
 
-    while(count < 100000) do
-      let k0 = dice(1,100).string()
+    while(count < iterations) do
+      let k0 = dice(1,keys).string()
       let k: String val = consume k0
       let v = dice(1,100000)
       kvs.push((k, v))
@@ -337,7 +370,7 @@ class iso _TestMapVsMap is UnitTest
     end
 
     count = 0
-    while(count < 100000) do
+    while(count < iterations) do
       let k = kvs(count)._1
       let v = kvs(count)._2
       pMap = pMap.put(k, v)
@@ -345,7 +378,7 @@ class iso _TestMapVsMap is UnitTest
       count = count + 1
     end
     count = 0
-    while(count < 100000) do
+    while(count < iterations) do
       let pmv = pMap.get(kvs(count)._1)
       let mmv = mMap(kvs(count)._1)
       h.expect_eq[Bool](H.equalMapU64Values(pmv, mmv), true)
@@ -354,6 +387,19 @@ class iso _TestMapVsMap is UnitTest
 
     true
 
+class iso _TestMapOption is UnitTest
+  fun name(): String => "persistent-data/Map returning Option"
+
+  fun apply(h: TestHelper): TestResult ? =>
+    var pMap: Map[String,U64] = Maps.empty[String,U64]()
+    pMap = pMap.put("a", 1)
+    let   some: Option[U64] = pMap.getOption("a")
+    let none: Option[U64] = pMap.getOption("b")
+    try h.expect_eq[U64](some.value(), 1) else error end
+    h.expect_eq[Bool](some.is_empty(), false)
+    h.expect_eq[Bool](none.is_empty(), true)
+
+    true
 
 
 primitive H
