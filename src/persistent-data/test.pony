@@ -36,6 +36,7 @@ actor Main is TestList
     test(_TestHAMTMap)
     test(_TestMapVsMap)
     test(_TestMapOption)
+//    test(_TestMapKeys)
 
 class iso _Benchmark is UnitTest
   fun name(): String => "benchmarks"
@@ -377,6 +378,7 @@ class iso _TestMapVsMap is UnitTest
       mMap.update(k, v)
       count = count + 1
     end
+
     count = 0
     while(count < iterations) do
       let pmv = pMap.get(kvs(count)._1)
@@ -401,6 +403,23 @@ class iso _TestMapOption is UnitTest
 
     true
 
+class iso _TestMapKeys is UnitTest
+ fun name(): String => "persistent-data/Map/keys()"
+
+ fun apply(h: TestHelper): TestResult ? =>
+   var pMap: Map[String,U64] = Maps.empty[String,U64]()
+   pMap = pMap.put("a", 1)
+   pMap = pMap.put("b", 2)
+   pMap = pMap.put("c", 3)
+   pMap = pMap.put("d", 4)
+   pMap = pMap.put("e", 5)
+   pMap = pMap.put("f", 6)
+   let keys: List[String] = pMap.keys()
+   let d = lambda(k: String) => Debug.out("*****" + k.string() + "*****") end
+   keys.foreach(d)
+   try h.expect_true(Lists.eq[String](keys, Lists.from[String](["a","b","c","d","e","f"]))) else error end
+
+   true
 
 primitive H
   fun isValue(v: (U32 | None), value: U32): Bool =>

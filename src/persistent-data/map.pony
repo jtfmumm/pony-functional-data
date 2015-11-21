@@ -1,4 +1,5 @@
 use "debug"
+use "../function-types"
 
 interface Hashable
   """
@@ -20,6 +21,9 @@ trait val Map[K: (Hashable val & Equatable[K] val), V: Any val]
   fun _getWithHash(k: K, hash: U32, level: U32): (V | None) ?
   fun put(k: K, v: V): Map[K,V] ?
   fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] ?
+  fun entries(): List[Entry[K,V]] ?
+  fun keys(): List[K] ?
+  fun values(): List[V] ?
 
 primitive Maps
   fun val empty[K: (Hashable val & Equatable[K] val),V: Any val](): Map[K,V] => MapNode[K,V].empty()
@@ -35,41 +39,45 @@ primitive Maps
   fun _last_level(): U32 => 4
 
 class val LeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
-  let _key: K
-  let _value: V
+  let key: K
+  let value: V
 
   new val create(k: K, v: V) =>
-    _key = k
-    _value = v
+    key = k
+    value = v
 
   fun size(): U64 => 1
 
   fun _is_leaf(): Bool => true
 
   fun get(k: K): (V | None) =>
-    if (k == _key) then _value else None end
+    if (k == key) then value else None end
 
   fun getOption(k: K): Option[V] =>
-    if (k == _key) then OSome[V](_value) else ONone[V] end
+    if (k == key) then OSome[V](value) else ONone[V] end
 
   fun _getWithHash(k: K, hash: U32, level: U32): (V | None) =>
     get(k)
 
   fun put(k: K, v: V): Map[K,V] ? =>
-    if (k == _key) then
+    if (k == key) then
       LeafNode[K,V](k, v) as Map[K,V]
     else
-      let tempNode = MapNode[K,V].empty().put(_key, _value)
+      let tempNode = MapNode[K,V].empty().put(key, value)
       tempNode.put(k, v)
     end
 
   fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] ? =>
-    if (k == _key) then
+    if (k == key) then
       LeafNode[K,V](k, v) as Map[K,V]
     else
-      let tempNode = MapNode[K,V].empty()._putWithHash(_key, _value, MapHelpers._hash[K](_key), level)
+      let tempNode = MapNode[K,V].empty()._putWithHash(key, value, MapHelpers._hash[K](key), level)
       tempNode._putWithHash(k, v, hash, level)
     end
+
+  fun entries(): List[Entry[K,V]] => Lists.from[Entry[K,V]]([Entry[K,V](key,value)])
+  fun keys(): List[K] => Lists.from[K]([key])
+  fun values(): List[V] => Lists.from[V]([value])
 
 class val Entry[K: (Hashable val & Equatable[K] val),V: Any val]
   let key: K
@@ -138,20 +146,31 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
 
   fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] => put(k, v)
 
+  fun entries(): List[Entry[K,V]] => _entries
+
+  fun keys(): List[K] =>
+    let toKey = lambda(e: Entry[K,V]): K => e.key end
+    _entries.map[K](toKey)
+
+  fun values(): List[V] =>
+    let toValue = lambda(e: Entry[K,V]): V => e.value end
+    _entries.map[V](toValue)
+
+
 class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
   let _size: U64
   //Currently, 32-bit bitmap
   let _bitmap: U32
-  let _pointers: Array[Map[K,V]] val
+  let pointers: Array[Map[K,V]] val
 
   new val create(bmap: U32, ps: Array[Map[K,V]] val) ? =>
     _bitmap = bmap
-    _pointers = ps
-    _size = MapHelpers.sumArraySizes[K,V](_pointers)
+    pointers = ps
+    _size = MapHelpers.sumArraySizes[K,V](pointers)
 
   new val empty() =>
     _bitmap = 0
-    _pointers = recover val Array[Map[K,V]] end
+    pointers = recover val Array[Map[K,V]] end
     _size = 0
 
   fun size(): U64 => _size
@@ -167,7 +186,7 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
     if (_BitOps.checkIdxBit(_bitmap, bmapIdx)) then
       let arrayIdx = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
-      _pointers(arrayIdx)._getWithHash(k, hash, level + 1)
+      pointers(arrayIdx)._getWithHash(k, hash, level + 1)
     else
       None
     end
@@ -182,13 +201,13 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
     let arrayIdx: U64 = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
     if (_BitOps.checkIdxBit(_bitmap, bmapIdx)) then
-      let newNode = _pointers(arrayIdx)._putWithHash(k, v, hash, level + 1)
-      let newArray = _overwriteInArrayAt(_pointers, newNode, arrayIdx)
+      let newNode = pointers(arrayIdx)._putWithHash(k, v, hash, level + 1)
+      let newArray = _overwriteInArrayAt(pointers, newNode, arrayIdx)
       MapNode[K,V](_bitmap, newArray)
     else
       let newBitMap = _BitOps.flipIndexedBitOn(_bitmap, bmapIdx)
       let newNode = LeafNode[K,V](k, v)
-      let newArray = _insertInArrayAt(_pointers, newNode, arrayIdx)
+      let newArray = _insertInArrayAt(pointers, newNode, arrayIdx)
       MapNode[K,V](newBitMap, newArray)
     end
 
@@ -196,13 +215,13 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
     let bmapIdx = _BitOps.bitmapIdxFor(hash, Maps._last_level())
     let arrayIdx: U64 = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
     if (_BitOps.checkIdxBit(_bitmap, bmapIdx)) then
-      let newNode = _pointers(arrayIdx).put(k, v)
-      let newArray = _overwriteInArrayAt(_pointers, newNode, arrayIdx)
+      let newNode = pointers(arrayIdx).put(k, v)
+      let newArray = _overwriteInArrayAt(pointers, newNode, arrayIdx)
       MapNode[K,V](_bitmap, newArray)
     else
       let newBitMap = _BitOps.flipIndexedBitOn(_bitmap, bmapIdx)
       let newNode = MultiLeafNode[K,V].put(k,v)
-      let newArray = _insertInArrayAt(_pointers, newNode, arrayIdx)
+      let newArray = _insertInArrayAt(pointers, newNode, arrayIdx)
       MapNode[K,V](newBitMap, newArray)
     end
 
@@ -235,6 +254,97 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
       aboveArr = aboveArr + 1
     end
     consume newArray
+
+  fun forEachPointer(f: SeFn1[Map[K,V]]) ? =>
+    var count: U64 = 0
+      while(count < pointers.size()) do
+        f(pointers(count))
+        count = count + 1
+      end
+
+  fun entries(): List[Entry[K,V]] ? =>
+    if (pointers.size() == 0) then return Lists.empty[Entry[K,V]]() end
+    let toVisit: Array[Map[K,V]] = Array[Map[K,V]]
+    let accArray: Array[Entry[K,V]] = Array[Entry[K,V]]
+    var count: U64 = 0
+    while(count < pointers.size()) do
+      toVisit.push(pointers(count))
+      count = count + 1
+    end
+
+    while(toVisit.size() > 0) do
+      let next = toVisit.pop()
+      match next
+      | let leaf: LeafNode[K,V] => accArray.push(Entry[K,V](leaf.key, leaf.value))
+      | let multileaf: MultiLeafNode[K,V] =>
+        var cur = multileaf.entries()
+        try
+          while(cur.is_non_empty()) do
+            accArray.push(cur.head())
+            cur = cur.tail()
+          end
+        end
+      | let map: MapNode[K,V] => toVisit.append(map.pointers)
+      end
+    end
+
+    Lists.from[Entry[K,V]](accArray)
+
+  fun keys(): List[K] ? =>
+    if (pointers.size() == 0) then return Lists.empty[K]() end
+    let toVisit: Array[Map[K,V]] = Array[Map[K,V]]
+    let accArray: Array[K] = Array[K]
+    var count: U64 = 0
+    while(count < pointers.size()) do
+      toVisit.push(pointers(count))
+      count = count + 1
+    end
+
+    while(toVisit.size() > 0) do
+      let next = toVisit.pop()
+      match next
+      | let leaf: LeafNode[K,V] => accArray.push(leaf.key)
+      | let multileaf: MultiLeafNode[K,V] =>
+        var cur = multileaf.keys()
+        try
+          while(cur.is_non_empty()) do
+            accArray.push(cur.head())
+            cur = cur.tail()
+          end
+        end
+      | let map: MapNode[K,V] => toVisit.append(map.pointers)
+      end
+    end
+
+    Lists.from[K](accArray)
+
+  fun values(): List[V] ? =>
+    if (pointers.size() == 0) then return Lists.empty[V]() end
+    let toVisit: Array[Map[K,V]] = Array[Map[K,V]]
+    let accArray: Array[V] = Array[V]
+    var count: U64 = 0
+    while(count < pointers.size()) do
+      toVisit.push(pointers(count))
+      count = count + 1
+    end
+
+    while(toVisit.size() > 0) do
+      let next = toVisit.pop()
+      match next
+      | let leaf: LeafNode[K,V] => accArray.push(leaf.value)
+      | let multileaf: MultiLeafNode[K,V] =>
+        var cur = multileaf.values()
+        try
+          while(cur.is_non_empty()) do
+            accArray.push(cur.head())
+            cur = cur.tail()
+          end
+        end
+      | let map: MapNode[K,V] => toVisit.append(map.pointers)
+      end
+    end
+
+    Lists.from[V](accArray)
 
 // For 32-bit operations
 primitive _BitOps
