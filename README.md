@@ -123,7 +123,7 @@ Currently has the following methods:
 
 Helper methods for the "collections" package mutable List
 
-MListT has the following methods:
+The primitive mutable-data/Lists has the following methods:
 
 ```
     unit[A](a: A): List[A]
