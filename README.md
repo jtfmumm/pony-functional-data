@@ -23,7 +23,7 @@ Currently has the following methods:
 There is also a primitive called Maps with helper methods:
 ```
   //Creates an empty Map
-  empty[V](): Map[K,V]
+  empty[K,V](): Map[K,V]
 
   //Creates a Map from an array of tuples (k, v)
   from[K,V](arr: Array[(K, V)]): Map[K,V]
