@@ -21,9 +21,11 @@ Currently has the following methods:
 
   fun getOrElse(k: K, v: V): V ?
     
-  fun put(k: K, v: V): Map[V] ?
+  fun put(k: K, v: V): Map[K,V] ?
   
   fun contains(k: K): Bool ?
+
+  fun remove(k: K): Map[K,V] ?
 ```
 
 There is also a primitive called Maps with helper methods:
