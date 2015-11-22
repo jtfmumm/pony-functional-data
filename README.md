@@ -18,8 +18,12 @@ Currently has the following methods:
   fun get(k: K): (V | None) ?
 
   fun getOption(k: K): Option[V] ?
+
+  fun getOrElse(k: K, v: V): V ?
     
   fun put(k: K, v: V): Map[V] ?
+  
+  fun contains(k: K): Bool ?
 ```
 
 There is also a primitive called Maps with helper methods:

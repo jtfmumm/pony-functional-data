@@ -12,14 +12,27 @@ trait val Map[K: (Hashable val & Equatable[K] val), V: Any val]
   fun apply(k: K): (V | None) ? => get(k)
   fun get(k: K): (V | None) ?
   fun getOption(k: K): Option[V] ? =>
-      match get(k)
-      | let r: V => OSome[V](r)
-      else
-        ONone[V]
-      end
+    match get(k)
+    | let r: V => OSome[V](r)
+    else
+      ONone[V]
+    end
   fun _getWithHash(k: K, hash: U32, level: U32): (V | None) ?
+  fun getOrElse(k: K, alt: V): V ? =>
+    match get(k)
+    | let v: V => v
+    else
+      alt
+    end
   fun put(k: K, v: V): Map[K,V] ?
   fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] ?
+  fun contains(k: K): Bool ? =>
+    match get(k)
+    | let v: V => true
+    else
+      false
+    end
+//  fun remove(k: K): Map[K,V] ?
 
 primitive Maps
   fun val empty[K: (Hashable val & Equatable[K] val),V: Any val](): Map[K,V] => MapNode[K,V].empty()
@@ -70,6 +83,8 @@ class val LeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
       let tempNode = MapNode[K,V].empty()._putWithHash(_key, _value, MapHelpers._hash[K](_key), level)
       tempNode._putWithHash(k, v, hash, level)
     end
+
+  fun remove(k: K): Map[K,V] ? => error
 
 class val Entry[K: (Hashable val & Equatable[K] val),V: Any val]
   let key: K
@@ -137,6 +152,8 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
     end
 
   fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] ? => put(k, v)
+
+//  fun remove(k: K): Map[K,V] ? =>
 
 class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
   let _size: U64
