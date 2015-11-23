@@ -341,7 +341,7 @@ primitive _BitOps
     (countPop(mask and bmap)).u64()
 
   fun flipIndexedBitOn(bmap: U32, idx: U32): U32 => (1 << idx) or bmap
-  fun flipIndexedBitOff(bmap: U32, idx: U32): U32 => 0//not(1 << idx) and bmap
+  fun flipIndexedBitOff(bmap: U32, idx: U32): U32 => not(1 << idx) and bmap
 
 primitive MapHelpers
   fun sumArraySizes[K: (Hashable val & Equatable[K] val),V: Any val](arr: Array[Map[K,V]] val): U64 ? =>
