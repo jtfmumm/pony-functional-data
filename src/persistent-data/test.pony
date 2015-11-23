@@ -348,6 +348,15 @@ class iso _TestHAMTMap is UnitTest
     h.expect_eq[Bool](H.isValue(m7.get("a"), 10), true)
     h.expect_eq[Bool](H.isValue(m7.get("b"), 3), true)
 
+    h.expect_eq[Bool](H.isNone(m7.get("a")), false)
+    let m8 = m7.remove("a")
+    h.expect_eq[Bool](H.isNone(m8.get("a")), true)
+    let m9 = m7.remove("e")
+    h.expect_eq[Bool](H.isNone(m9.get("e")), true)
+    let m10 = m9.remove("b").remove("d")
+    h.expect_eq[Bool](H.isNone(m10.get("b")), true)
+    h.expect_eq[Bool](H.isNone(m10.get("d")), true)
+
     true
 
 class iso _TestMapVsMap is UnitTest
