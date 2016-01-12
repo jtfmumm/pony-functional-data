@@ -147,9 +147,9 @@ The primitive mutable-data/Lists has the following methods:
 
     partition[A: Any #read](l: List[A], f: Fn1[A!,Bool]): (List[A], List[A])
 
-    drop[A: Any #read](l: List[A], n: U64): List[A]
+    drop[A: Any #read](l: List[A], n: USize): List[A]
 
-    take[A: Any #read](l: List[A], n: U64): List[A]
+    take[A: Any #read](l: List[A], n: USize): List[A]
 
     take_while[A: Any #read](l: List[A], f: Fn1[A!,Bool]): List[A]
 ```
