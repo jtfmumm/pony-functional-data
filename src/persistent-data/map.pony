@@ -39,7 +39,7 @@ primitive Maps
   fun val empty[K: (Hashable val & Equatable[K] val),V: Any val](): Map[K,V] => MapNode[K,V].empty()
   fun val from[K: (Hashable val & Equatable[K] val),V: Any val](pairs: Array[(K, V)]): Map[K,V] ? =>
     var newMap = empty[K,V]()
-    var count: U64 = 0
+    var count: USize = 0
     while(count < pairs.size()) do
       (let k, let v) = pairs(count)
       newMap = newMap.put(k, v)
@@ -214,7 +214,7 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
   fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] ? =>
     if (level >= Maps._last_level()) then return _lastLevelPutWithHash(k, v, hash) end
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
-    let arrayIdx: U64 = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
+    let arrayIdx: USize = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
     if (_BitOps.checkIdxBit(_bitmap, bmapIdx)) then
       let newNode = _pointers(arrayIdx)._putWithHash(k, v, hash, level + 1)
       let newArray = _overwriteInArrayAt(_pointers, newNode, arrayIdx)
@@ -228,7 +228,7 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
 
   fun _lastLevelPutWithHash(k: K, v: V, hash: U32): Map[K,V] ? =>
     let bmapIdx = _BitOps.bitmapIdxFor(hash, Maps._last_level())
-    let arrayIdx: U64 = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
+    let arrayIdx: USize = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
     if (_BitOps.checkIdxBit(_bitmap, bmapIdx)) then
       let newNode = _pointers(arrayIdx).put(k, v)
       let newArray = _overwriteInArrayAt(_pointers, newNode, arrayIdx)
@@ -240,8 +240,8 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
       MapNode[K,V](newBitMap, newArray)
     end
 
-  fun _insertInArrayAt(arr: Array[Map[K,V]] val, node: Map[K,V], idx: U64): Array[Map[K,V]] val ? =>
-    var belowArr: U64 = 0
+  fun _insertInArrayAt(arr: Array[Map[K,V]] val, node: Map[K,V], idx: USize): Array[Map[K,V]] val ? =>
+    var belowArr: USize = 0
     var aboveArr = idx
     let newArray: Array[Map[K,V]] trn = recover trn Array[Map[K,V]] end
     while(belowArr < idx) do
@@ -255,8 +255,8 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
     end
     consume newArray
 
-  fun _overwriteInArrayAt(arr: Array[Map[K,V]] val, node: Map[K,V], idx: U64): Array[Map[K,V]] val ? =>
-    var belowArr: U64 = 0
+  fun _overwriteInArrayAt(arr: Array[Map[K,V]] val, node: Map[K,V], idx: USize): Array[Map[K,V]] val ? =>
+    var belowArr: USize = 0
     var aboveArr = idx + 1
     let newArray: Array[Map[K,V]] trn = recover trn Array[Map[K,V]] end
     while(belowArr < idx) do
@@ -270,8 +270,8 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
     end
     consume newArray
 
-  fun _removeInArrayAt(arr: Array[Map[K,V]] val, idx: U64): Array[Map[K,V]] val ? =>
-    var belowArr: U64 = 0
+  fun _removeInArrayAt(arr: Array[Map[K,V]] val, idx: USize): Array[Map[K,V]] val ? =>
+    var belowArr: USize = 0
     var aboveArr = idx + 1
     let newArray: Array[Map[K,V]] trn = recover trn Array[Map[K,V]] end
     while(belowArr < idx) do
@@ -289,7 +289,7 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
 
   fun _removeWithHash(k: K, hash: U32, level: U32): Map[K,V] ? =>
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
-    let arrayIdx: U64 = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
+    let arrayIdx: USize = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
     if (level >= Maps._last_level()) then
       let newNode = _pointers(arrayIdx).remove(k)
       return MapNode[K,V](_bitmap, _overwriteInArrayAt(_pointers, newNode, arrayIdx))
@@ -335,17 +335,17 @@ primitive _BitOps
 //    ct = (ct + (ct >> 16)) and 63 //63 -> 0x3F
 //    ct
 
-  fun arrayIdxFor(bmap: U32, idx: U32): U64 =>
+  fun arrayIdxFor(bmap: U32, idx: U32): USize =>
    // Using 0xFFFFFFFF to generate mask
    let mask = not(4294967295 << idx)
-    (countPop(mask and bmap)).u64()
+    (countPop(mask and bmap)).usize()
 
   fun flipIndexedBitOn(bmap: U32, idx: U32): U32 => (1 << idx) or bmap
   fun flipIndexedBitOff(bmap: U32, idx: U32): U32 => not(1 << idx) and bmap
 
 primitive MapHelpers
   fun sumArraySizes[K: (Hashable val & Equatable[K] val),V: Any val](arr: Array[Map[K,V]] val): U64 ? =>
-    var count: U64 = 0
+    var count: USize = 0
     var sum: U64 = 0
     while (count < arr.size()) do
       sum = sum + arr(count).size()

@@ -124,7 +124,7 @@ primitive Lists
     end
     (l1, l2)
 
-  fun drop[A: Any #read](l: List[A], n: U64): List[A] =>
+  fun drop[A: Any #read](l: List[A], n: USize): List[A] =>
     if (l.size() < (n + 1)) then return List[A] end
 
     try
@@ -133,7 +133,7 @@ primitive Lists
       List[A]
     end
 
-  fun _drop[A: Any #read](ln: ListNode[A], n: U64): List[A] =>
+  fun _drop[A: Any #read](ln: ListNode[A], n: USize): List[A] =>
     var count = n
     var cur: ListNode[A] = ln
     while(count > 0) do
@@ -150,7 +150,7 @@ primitive Lists
     end
     res
 
-  fun take[A: Any #read](l: List[A], n: U64): List[A] =>
+  fun take[A: Any #read](l: List[A], n: USize): List[A] =>
     if (l.size() <= n) then l end
 
     try
@@ -159,7 +159,7 @@ primitive Lists
       List[A]
     end
 
-  fun _take[A: Any #read](ln: ListNode[A], n: U64): List[A] =>
+  fun _take[A: Any #read](ln: ListNode[A], n: USize): List[A] =>
     var count = n
     let res = List[A]
     var cur: ListNode[A] = ln

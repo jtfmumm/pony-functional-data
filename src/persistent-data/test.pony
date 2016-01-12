@@ -41,7 +41,7 @@ class iso _Benchmark is UnitTest
   fun name(): String => "benchmarks"
 
   fun apply(h: TestHelper): TestResult ? =>
-    let iterations: U64 = 1000
+    let iterations: USize = 1000
     let keys: U64 = 100000
     Bench.bench(iterations, keys)
 //    Bench.list_bench(iterations, keys)
@@ -307,10 +307,10 @@ class iso _TestBitOps is UnitTest
     let f1 = _BitOps.arrayIdxFor(12711223, 5)
     let f2 = _BitOps.arrayIdxFor(12711223, 10)
     let f3 = _BitOps.arrayIdxFor(12711223, 25)
-    h.expect_eq[U64](f0, 0)
-    h.expect_eq[U64](f1, 4)
-    h.expect_eq[U64](f2, 6)
-    h.expect_eq[U64](f3, 14)
+    h.expect_eq[USize](f0, 0)
+    h.expect_eq[USize](f1, 4)
+    h.expect_eq[USize](f2, 6)
+    h.expect_eq[USize](f3, 14)
 
     true
 
@@ -372,8 +372,8 @@ class iso _TestMapVsMap is UnitTest
     let mMap: mut.Map[String,U64] = mut.Map[String,U64]()
     let kvs = Array[(String,U64)]()
     let dice = Dice(MT)
-    var count: U64 = 0
-    let iterations: U64 = 100000
+    var count: USize = 0
+    let iterations: USize = 100000
     let keys: U64 = 10000
 
     while(count < iterations) do

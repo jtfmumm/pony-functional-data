@@ -71,7 +71,7 @@ class iso _TestFlatten is UnitTest
 
     let c = List[List[U32]]
     let d = Lists.flatten[U32](c)
-    h.expect_eq[U64](d.size(), 0)
+    h.expect_eq[USize](d.size(), 0)
 
     true
 
@@ -85,7 +85,7 @@ class iso _TestFilter is UnitTest
     let f = lambda(a: U32): Bool => consume a > 1 end
     let b = Lists.filter[U32](a, f)
 
-    h.expect_eq[U64](b.size(), 2)
+    h.expect_eq[USize](b.size(), 2)
     h.expect_eq[U32](b(0), 2)
     h.expect_eq[U32](b(1), 3)
 
@@ -179,8 +179,8 @@ class iso _TestPartition is UnitTest
     let b = List[U32]
     (let emptyEvens, let emptyOdds) = Lists.partition[U32](b, isEven)
 
-    h.expect_eq[U64](emptyEvens.size(), 0)
-    h.expect_eq[U64](emptyOdds.size(), 0)
+    h.expect_eq[USize](emptyEvens.size(), 0)
+    h.expect_eq[USize](emptyOdds.size(), 0)
 
     true
 
@@ -196,17 +196,17 @@ class iso _TestDrop is UnitTest
     let d = Lists.drop[U32](a, 5)
     let e = Lists.drop[U32](a, 6)
 
-    h.expect_eq[U64](b.size(), 3)
+    h.expect_eq[USize](b.size(), 3)
     try h.expect_eq[U32](b(0), 2) else error end
     try h.expect_eq[U32](b(2), 4) else error end
-    h.expect_eq[U64](c.size(), 1)
+    h.expect_eq[USize](c.size(), 1)
     try h.expect_eq[U32](c(0), 4) else error end
-    h.expect_eq[U64](d.size(), 0)
-    h.expect_eq[U64](e.size(), 0)
+    h.expect_eq[USize](d.size(), 0)
+    h.expect_eq[USize](e.size(), 0)
 
     let empty = List[U32]
     let l = Lists.drop[U32](empty, 3)
-    h.expect_eq[U64](l.size(), 0)
+    h.expect_eq[USize](l.size(), 0)
 
     true
 
@@ -260,31 +260,31 @@ class iso _TestTake is UnitTest
     let e = Lists.take[U32](a, 6)
     let m = Lists.take[U32](a, 0)
 
-    h.expect_eq[U64](b.size(), 2)
+    h.expect_eq[USize](b.size(), 2)
     try h.expect_eq[U32](b(0), 0) else error end
     try h.expect_eq[U32](b(1), 1) else error end
-    h.expect_eq[U64](c.size(), 4)
+    h.expect_eq[USize](c.size(), 4)
     try h.expect_eq[U32](c(0), 0) else error end
     try h.expect_eq[U32](c(1), 1) else error end
     try h.expect_eq[U32](c(2), 2) else error end
     try h.expect_eq[U32](c(3), 3) else error end
-    h.expect_eq[U64](d.size(), 5)
+    h.expect_eq[USize](d.size(), 5)
     try h.expect_eq[U32](d(0), 0) else error end
     try h.expect_eq[U32](d(1), 1) else error end
     try h.expect_eq[U32](d(2), 2) else error end
     try h.expect_eq[U32](d(3), 3) else error end
     try h.expect_eq[U32](d(4), 4) else error end
-    h.expect_eq[U64](e.size(), 5)
+    h.expect_eq[USize](e.size(), 5)
     try h.expect_eq[U32](e(0), 0) else error end
     try h.expect_eq[U32](e(1), 1) else error end
     try h.expect_eq[U32](e(2), 2) else error end
     try h.expect_eq[U32](e(3), 3) else error end
     try h.expect_eq[U32](e(4), 4) else error end
-    h.expect_eq[U64](m.size(), 0)
+    h.expect_eq[USize](m.size(), 0)
 
     let empty = List[U32]
     let l = Lists.take[U32](empty, 3)
-    h.expect_eq[U64](l.size(), 0)
+    h.expect_eq[USize](l.size(), 0)
 
     true
 
@@ -304,23 +304,23 @@ class iso _TestTakeWhile is UnitTest
     let d = Lists.take_while[U32](a, y)
     let e = Lists.take_while[U32](a, z)
 
-    h.expect_eq[U64](b.size(), 5)
+    h.expect_eq[USize](b.size(), 5)
     try h.expect_eq[U32](b(0), 0) else error end
     try h.expect_eq[U32](b(1), 1) else error end
     try h.expect_eq[U32](b(2), 2) else error end
     try h.expect_eq[U32](b(3), 3) else error end
     try h.expect_eq[U32](b(4), 4) else error end
-    h.expect_eq[U64](c.size(), 4)
+    h.expect_eq[USize](c.size(), 4)
     try h.expect_eq[U32](c(0), 0) else error end
     try h.expect_eq[U32](c(1), 1) else error end
     try h.expect_eq[U32](c(2), 2) else error end
     try h.expect_eq[U32](c(3), 3) else error end
-    h.expect_eq[U64](d.size(), 1)
+    h.expect_eq[USize](d.size(), 1)
     try h.expect_eq[U32](d(0), 0) else error end
-    h.expect_eq[U64](e.size(), 0)
+    h.expect_eq[USize](e.size(), 0)
 
     let empty = List[U32]
     let l = Lists.take_while[U32](empty, g)
-    h.expect_eq[U64](l.size(), 0)
+    h.expect_eq[USize](l.size(), 0)
 
     true

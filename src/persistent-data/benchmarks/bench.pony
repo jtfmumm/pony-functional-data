@@ -6,13 +6,13 @@ use "random"
 
 
 primitive Bench
-  fun bench(iterations: U64, keys: U64) ? =>
+  fun bench(iterations: USize, keys: U64) ? =>
     var pMap: Map[String,U64] = Maps.empty[String,U64]()
     let mMap: mut.Map[String,U64] = mut.Map[String,U64]()
     let kvs = Array[(String,U64)]()
     // Different seed each run
     let dice = Dice(MT(Time.millis()))
-    var count: U64 = 0
+    var count: USize = 0
     var perf_begin: U64 = 0
     var perf_end: U64 = 0
 
