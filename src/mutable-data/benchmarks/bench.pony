@@ -75,66 +75,6 @@ primitive Bench
     Time.perf_end()
     Debug.out("Mutable reads: " + (perf_end - perf_begin).string())
 
-//fun list_try_bench(iterations: USize) =>
-//    // Different seed each run
-//    let dice = Dice(MT(Time.millis()))
-//    var count: USize = 0
-//    var long_lst: List[U64] = Lists.empty[U64]()
-//    var short_lst: List[U64] = Lists.empty[U64]().prepend(1).prepend(2).prepend(3).prepend(4)
-//    var perf_begin: U64 = 0
-//    var perf_end: U64 = 0
-//
-//    while(count < iterations) do
-//      let v: U64 = dice(1,100000)
-//      long_lst = long_lst.prepend(v)
-//      count = count + 1
-//    end
-//
-//    //MAPS
-//    count = 0
-//    Time.perf_begin()
-//    perf_begin = Time.millis()
-//    while(count < iterations) do
-//      let new_m = long_lst.map[U64](lambda(x: U64): U64 => x * 2 end)
-//      count = count + 1
-//    end
-//    perf_end = Time.millis()
-//    Time.perf_end()
-//    Debug.out("Match map (LONG): " + (perf_end - perf_begin).string())
-//
-//    count = 0
-//    Time.perf_begin()
-//    perf_begin = Time.millis()
-//    while(count < iterations) do
-//      let new_m = long_lst.map_try[U64](lambda(x: U64): U64 => x * 2 end)
-//      count = count + 1
-//    end
-//    perf_end = Time.millis()
-//    Time.perf_end()
-//    Debug.out("Try map (LONG): " + (perf_end - perf_begin).string())
-//
-//    count = 0
-//    Time.perf_begin()
-//    perf_begin = Time.millis()
-//    while(count < iterations) do
-//      let new_match_m = short_lst.map[U64](lambda(x: U64): U64 => x * 2 end)
-//      count = count + 1
-//    end
-//    perf_end = Time.millis()
-//    Time.perf_end()
-//    Debug.out("Match map (SHORT): " + (perf_end - perf_begin).string())
-//
-//    count = 0
-//    Time.perf_begin()
-//    perf_begin = Time.millis()
-//    while(count < iterations) do
-//      let new_match_m = short_lst.map_try[U64](lambda(x: U64): U64 => x * 2 end)
-//      count = count + 1
-//    end
-//    perf_end = Time.millis()
-//    Time.perf_end()
-//    Debug.out("Try map (SHORT): " + (perf_end - perf_begin).string())
-
 //  fun list_bench(iterations: U64, keys: U64) =>
 //    var list: List[U64] = Lists.empty[U64]()
 //    // Different seed each run

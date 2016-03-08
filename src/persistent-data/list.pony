@@ -9,9 +9,9 @@ trait val List[A: Any val]
   fun val reverse(): List[A]
   fun val prepend(a: A): List[A]
   fun val concat(l: List[A]): List[A]
-  fun map[B: Any val](f: Fn1[A!,B^]): List[B] ?
-  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B] ?
-  fun for_each(f: SeFn1[A!]) ?
+  fun map[B: Any val](f: Fn1[A!,B^]): List[B]
+  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B]
+  fun for_each(f: SeFn1[A!])
   fun filter(f: Fn1[A!, Bool]): List[A] ?
   fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
   fun every(f: Fn1[A!,Bool]): Bool ?
@@ -104,34 +104,44 @@ class val LCons[A: Any val] is List[A]
       acc.reverse()
     end
 
-  fun map[B: Any val](f: Fn1[A!,B^]): List[B] ? =>
+  fun map[B: Any val](f: Fn1[A!,B^]): List[B] =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _map[B](cur, f, Lists.empty[B]())
-  fun _map[B: Any val](l: List[A], f: Fn1[A!,B^], acc: List[B]): List[B] ? =>
-    match l
-    | let cons: LCons[A] => _map[B](cons.tail(), f, acc.prepend(f(cons.head())))
+  fun _map[B: Any val](l: List[A], f: Fn1[A!,B^], acc: List[B]): List[B] =>
+    try
+      match l
+      | let cons: LCons[A] => _map[B](cons.tail(), f, acc.prepend(f(cons.head())))
+      else
+        acc.reverse()
+      end
     else
-      acc.reverse()
+      Lists.empty[B]()
     end
 
-  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B] ? =>
+  fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B] =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _flat_map[B](cur, f, Lists.empty[B]())
-  fun _flat_map[B: Any val](l: List[A], f: Fn1[A!,List[B]], acc: List[B]): List[B] ? =>
-    match l
-    | let cons: LCons[A] => _flat_map[B](cons.tail(), f, Lists._rev_prepend[B](f(cons.head()), acc))
+  fun _flat_map[B: Any val](l: List[A], f: Fn1[A!,List[B]], acc: List[B]): List[B] =>
+    try
+      match l
+      | let cons: LCons[A] => _flat_map[B](cons.tail(), f, Lists._rev_prepend[B](f(cons.head()), acc))
+      else
+        acc.reverse()
+      end
     else
-      acc.reverse()
+      Lists.empty[B]()
     end
 
-  fun for_each(f: SeFn1[A!]) ? =>
+  fun for_each(f: SeFn1[A!]) =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _for_each(cur, f)
-  fun _for_each(l: List[A], f: SeFn1[A!]) ? =>
-    match l
-    | let cons: LCons[A] =>
-      f(cons.head())
-      _for_each(cons.tail(), f)
+  fun _for_each(l: List[A], f: SeFn1[A!]) =>
+    try
+      match l
+      | let cons: LCons[A] =>
+        f(cons.head())
+        _for_each(cons.tail(), f)
+      end
     end
 
   fun filter(f: Fn1[A!, Bool]): List[A] ? =>

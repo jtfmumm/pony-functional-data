@@ -318,23 +318,6 @@ primitive _BitOps
 
   fun countPop(n: U32): U32 => @"llvm.ctpop.i32"[U32](n)
 
-//  fun countPop(n: U32): U32 =>
-//    //0x55555555
-//    let sk5: U32 = 1431655765
-//    //0x33333333
-//    let sk3: U32 = 858993459
-//    //0xF0F0F0F
-//    let skF0: U32 = 252645135
-//    //0xFF00FF
-//    let skFF: U32 = 16711935
-//    var ct = n
-//    ct = ct - ((ct >> 1) and sk5)
-//    ct = (ct and sk3) + ((ct >> 2) and sk3)
-//    ct = (ct and skF0) + ((ct >> 4) and skF0)
-//    ct = ct + (ct >> 8)
-//    ct = (ct + (ct >> 16)) and 63 //63 -> 0x3F
-//    ct
-
   fun arrayIdxFor(bmap: U32, idx: U32): USize =>
    // Using 0xFFFFFFFF to generate mask
    let mask = not(4294967295 << idx)
