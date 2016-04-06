@@ -35,7 +35,6 @@ actor Main is TestList
     test(_TestBitOps)
     test(_TestHAMTMap)
     test(_TestMapVsMap)
-    test(_TestMapOption)
 
 class iso _Benchmark is UnitTest
   fun name(): String => "benchmarks"
@@ -155,7 +154,7 @@ class iso _TestFold is UnitTest
 class iso _TestEveryExists is UnitTest
   fun name(): String => "persistent-data/Lists/every()exists()"
 
-  fun apply(h: TestHelper) ? =>
+  fun apply(h: TestHelper) =>
     let is_even = lambda(x: U32): Bool => x % 2 == 0 end
     let l9 = Lists.from[U32]([4,2,10])
     let l10 = Lists.from[U32]([1,1,3])
@@ -317,50 +316,51 @@ class iso _TestBitOps is UnitTest
 class iso _TestHAMTMap is UnitTest
   fun name(): String => "persistent-data/Map"
 
-  fun apply(h: TestHelper) ? =>
+  fun apply(h: TestHelper) =>
     let m1: Map[String,U32] = Maps.empty[String,U32]()
-    let v1 = m1.get("a")
-    let v1b = m1("b")
+    h.assert_error(lambda()(m1 = m1)? => m1.get("a") end)
     let s1 = m1.size()
-    h.assert_eq[Bool](H.isNone(v1), true)
-    h.assert_eq[Bool](H.isValue(v1, 0), false)
-    h.assert_eq[Bool](H.isNone(v1b), true)
-    h.assert_eq[Bool](H.isValue(v1b, 0), false)
     h.assert_eq[U64](s1, 0)
 
-    let m2 = m1.put("a", 5)
-    let m3 = m2.put("b", 10)
-    let m4 = m3.put("a", 4)
-    let m5 = m4.put("c", 0)
+    try
+      let m2 = m1.put("a", 5)
+      let m3 = m2.put("b", 10)
+      let m4 = m3.put("a", 4)
+      let m5 = m4.put("c", 0)
+      h.assert_eq[U32](m2.get("a"), 5)
+      h.assert_eq[U32](m3.get("b"), 10)
+      h.assert_eq[U32](m4.get("a"), 4)
+      h.assert_eq[U32](m5.get("c"), 0)
+    else
+      h.complete(false)
+    end
 
-    h.assert_eq[Bool](H.isValue(m2.get("a"), 5), true)
-    h.assert_eq[Bool](H.isValue(m3.get("b"), 10), true)
-    h.assert_eq[Bool](H.isValue(m4.get("a"), 4), true)
-    h.assert_eq[Bool](H.isValue(m5.get("c"), 0), true)
-    h.assert_eq[Bool](H.isNone(m5.get("d")), true)
+    try
+      let m6 = Maps.from[String,U32]([("a", 2), ("b", 3), ("d", 4), ("e", 5)])
+      let m7 = m6.put("a", 10)
+      h.assert_eq[U32](m6.get("a"), 2)
+      h.assert_eq[U32](m6.get("b"), 3)
+      h.assert_eq[U32](m6.get("d"), 4)
+      h.assert_eq[U32](m6.get("e"), 5)
+      h.assert_eq[U32](m7.get("a"), 10)
+      h.assert_eq[U32](m7.get("b"), 3)
+      h.assert_eq[U32](m7.get("a"), 10)
+      let m8 = m7.remove("a")
+      h.assert_error(lambda()(m8 = m8)? => m8.get("a") end)
+      h.assert_eq[U32](m8.get("b"), 3)
+      h.assert_eq[U32](m8.get("d"), 4)
+      h.assert_eq[U32](m8.get("e"), 5)
+      let m9 = m7.remove("e")
+      h.assert_error(lambda()(m9 = m9)? => m9.get("e") end)
+      h.assert_eq[U32](m9.get("b"), 3)
+      h.assert_eq[U32](m9.get("d"), 4)
+      let m10 = m9.remove("b").remove("d")
+      h.assert_error(lambda()(m10 = m10)? => m10.get("b") end)
+      h.assert_error(lambda()(m10 = m10)? => m10.get("d") end)
+    else
+      h.complete(false)
+    end
 
-    let m6 = Maps.from[String,U32]([("a", 2), ("b", 3), ("d", 4), ("e", 5)])
-    let m7 = m6.put("a", 10)
-    h.assert_eq[Bool](H.isValue(m6.get("a"), 2), true)
-    h.assert_eq[Bool](H.isValue(m6.get("b"), 3), true)
-    h.assert_eq[Bool](H.isValue(m6.get("d"), 4), true)
-    h.assert_eq[Bool](H.isValue(m6.get("e"), 5), true)
-    h.assert_eq[Bool](H.isValue(m7.get("a"), 10), true)
-    h.assert_eq[Bool](H.isValue(m7.get("b"), 3), true)
-
-    h.assert_eq[Bool](H.isNone(m7.get("a")), false)
-    let m8 = m7.remove("a")
-    h.assert_eq[Bool](H.isNone(m8.get("a")), true)
-    h.assert_eq[Bool](H.isValue(m8.get("b"), 3), true)
-    h.assert_eq[Bool](H.isValue(m8.get("d"), 4), true)
-    h.assert_eq[Bool](H.isValue(m8.get("e"), 5), true)
-    let m9 = m7.remove("e")
-    h.assert_eq[Bool](H.isNone(m9.get("e")), true)
-    h.assert_eq[Bool](H.isValue(m9.get("b"), 3), true)
-    h.assert_eq[Bool](H.isValue(m9.get("d"), 4), true)
-    let m10 = m9.remove("b").remove("d")
-    h.assert_eq[Bool](H.isNone(m10.get("b")), true)
-    h.assert_eq[Bool](H.isNone(m10.get("d")), true)
 
     true
 
@@ -402,19 +402,19 @@ class iso _TestMapVsMap is UnitTest
 
     true
 
-class iso _TestMapOption is UnitTest
-  fun name(): String => "persistent-data/Map returning Option"
-
-  fun apply(h: TestHelper) ? =>
-    var pMap: Map[String,U64] = Maps.empty[String,U64]()
-    pMap = pMap.put("a", 1)
-    let   some: Option[U64] = pMap.getOption("a")
-    let none: Option[U64] = pMap.getOption("b")
-    h.assert_eq[U64](some.value(), 1)
-    h.assert_eq[Bool](some.is_empty(), false)
-    h.assert_eq[Bool](none.is_empty(), true)
-
-    true
+//class iso _TestMapOption is UnitTest
+//  fun name(): String => "persistent-data/Map returning Option"
+//
+//  fun apply(h: TestHelper) ? =>
+//    var pMap: Map[String,U64] = Maps.empty[String,U64]()
+//    pMap = pMap.put("a", 1)
+//    let   some: Option[U64] = pMap.getOption("a")
+//    let none: Option[U64] = pMap.getOption("b")
+//    h.assert_eq[U64](some.value(), 1)
+//    h.assert_eq[Bool](some.is_empty(), false)
+//    h.assert_eq[Bool](none.is_empty(), true)
+//
+//    true
 
 
 primitive H

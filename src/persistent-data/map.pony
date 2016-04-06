@@ -1,5 +1,3 @@
-use "debug"
-
 interface Hashable
   """
   Anything with a hash method is hashable.
@@ -9,26 +7,21 @@ interface Hashable
 trait val Map[K: (Hashable val & Equatable[K] val), V: Any val]
   fun size(): U64
   fun _is_leaf(): Bool
-  fun apply(k: K): (V | None) ? => get(k)
-  fun get(k: K): (V | None) ?
-  fun getOption(k: K): Option[V] ? =>
-    match get(k)
-    | let r: V => OSome[V](r)
-    else
-      ONone[V]
-    end
-  fun _getWithHash(k: K, hash: U32, level: U32): (V | None) ?
+  fun apply(k: K): V ? => get(k)
+  fun get(k: K): V ?
+  fun _getWithHash(k: K, hash: U32, level: U32): V ?
   fun getOrElse(k: K, alt: V): V ? =>
-    match get(k)
-    | let v: V => v
+    try
+      get(k)
     else
       alt
     end
   fun put(k: K, v: V): Map[K,V] ?
   fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] ?
-  fun contains(k: K): Bool ? =>
-    match get(k)
-    | let v: V => true
+  fun contains(k: K): Bool =>
+    try
+      get(k)
+      true
     else
       false
     end
@@ -60,13 +53,10 @@ class val LeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
 
   fun _is_leaf(): Bool => true
 
-  fun get(k: K): (V | None) =>
-    if (k == _key) then _value else None end
+  fun get(k: K): V ? =>
+    if (k == _key) then _value else error end
 
-  fun getOption(k: K): Option[V] =>
-    if (k == _key) then OSome[V](_value) else ONone[V] end
-
-  fun _getWithHash(k: K, hash: U32, level: U32): (V | None) =>
+  fun _getWithHash(k: K, hash: U32, level: U32): V ? =>
     get(k)
 
   fun put(k: K, v: V): Map[K,V] ? =>
@@ -110,7 +100,7 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
 
   fun _is_leaf(): Bool => true
 
-  fun get(k: K): (V | None) =>
+  fun get(k: K): V ? =>
     try
       var cur = _entries
       while(cur.is_non_empty()) do
@@ -118,14 +108,14 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
         if (next.key == k) then return next.value end
         cur = cur.tail()
       end
-      return None
+      error
     else
-      return None
+      error
     end
 
-  fun _getWithHash(k: K, hash: U32, level: U32): (V | None) => get(k)
+  fun _getWithHash(k: K, hash: U32, level: U32): V ? => get(k)
 
-  fun put(k: K, v: V): Map[K,V] ? =>
+  fun put(k: K, v: V): Map[K,V] =>
     let test =
       object
         let key: K = k
@@ -153,7 +143,7 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
       MultiLeafNode[K,V].from(acc)
     end
 
-  fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] ? => put(k, v)
+  fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] => put(k, v)
 
   fun _removeEntry(k: K, es: List[Entry[K,V]], acc: List[Entry[K,V]]): Map[K,V] =>
     try
@@ -178,7 +168,7 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
   let _bitmap: U32
   let _pointers: Array[Map[K,V]] val
 
-  new val create(bmap: U32, ps: Array[Map[K,V]] val) ? =>
+  new val create(bmap: U32, ps: Array[Map[K,V]] val) =>
     _bitmap = bmap
     _pointers = ps
     _size = MapHelpers.sumArraySizes[K,V](_pointers)
@@ -192,18 +182,18 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
 
   fun _is_leaf(): Bool => false
 
-  fun get(k: K): (V | None) ? =>
+  fun get(k: K): V ? =>
     let hash = MapHelpers._hash[K](k)
     let level: U32 = 0
     _getWithHash(k, hash, level)
 
-  fun _getWithHash(k: K, hash: U32, level: U32): (V | None) ? =>
+  fun _getWithHash(k: K, hash: U32, level: U32): V ? =>
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
     if (_BitOps.checkIdxBit(_bitmap, bmapIdx)) then
       let arrayIdx = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
       _pointers(arrayIdx)._getWithHash(k, hash, level + 1)
     else
-      None
+      error
     end
 
   fun put(k: K, v: V): Map[K,V] ? =>
@@ -327,11 +317,11 @@ primitive _BitOps
   fun flipIndexedBitOff(bmap: U32, idx: U32): U32 => not(1 << idx) and bmap
 
 primitive MapHelpers
-  fun sumArraySizes[K: (Hashable val & Equatable[K] val),V: Any val](arr: Array[Map[K,V]] val): U64 ? =>
+  fun sumArraySizes[K: (Hashable val & Equatable[K] val),V: Any val](arr: Array[Map[K,V]] val): U64 =>
     var count: USize = 0
     var sum: U64 = 0
-    while (count < arr.size()) do
-      sum = sum + arr(count).size()
+    for m in arr.values() do
+      sum = sum + m.size()
       count = count + 1
     end
     sum

@@ -12,10 +12,10 @@ trait val List[A: Any val]
   fun map[B: Any val](f: Fn1[A!,B^]): List[B]
   fun flat_map[B: Any val](f: Fn1[A!,List[B]]): List[B]
   fun for_each(f: SeFn1[A!])
-  fun filter(f: Fn1[A!, Bool]): List[A] ?
-  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ?
-  fun every(f: Fn1[A!,Bool]): Bool ?
-  fun exists(f: Fn1[A!,Bool]): Bool ?
+  fun filter(f: Fn1[A!, Bool]): List[A]
+  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B
+  fun every(f: Fn1[A!,Bool]): Bool
+  fun exists(f: Fn1[A!,Bool]): Bool
   fun partition(f: Fn1[A!,Bool]): (List[A], List[A]) ?
   fun drop(n: U64): List[A]
   fun drop_while(f: Fn1[A!,Bool]): List[A] ?
@@ -144,56 +144,74 @@ class val LCons[A: Any val] is List[A]
       end
     end
 
-  fun filter(f: Fn1[A!, Bool]): List[A] ? =>
+  fun filter(f: Fn1[A!, Bool]): List[A] =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _filter(cur, f, Lists.empty[A]())
-  fun _filter(l: List[A], f: Fn1[A!, Bool], acc: List[A]): List[A] ? =>
+  fun _filter(l: List[A], f: Fn1[A!, Bool], acc: List[A]): List[A] =>
     match l
     | let cons: LCons[A] =>
+      try
         if (f(cons.head())) then
           _filter(cons.tail(), f, acc.prepend(cons.head()))
         else
           _filter(cons.tail(), f, acc)
         end
+      else
+        acc.reverse()
+      end
     else
       acc.reverse()
     end
 
-  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B ? =>
+  fun fold[B: Any val](f: Fn2[B!,A!,B^], acc: B): B =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _fold[B](cur, f, acc)
-  fun _fold[B: Any val](l: List[A], f: Fn2[B!,A!,B^], acc: B): B ? =>
+  fun _fold[B: Any val](l: List[A], f: Fn2[B!,A!,B^], acc: B): B =>
     match l
-    | let cons: LCons[A] => _fold[B](cons.tail(), f, f(acc, cons.head()))
+    | let cons: LCons[A] =>
+      try
+        _fold[B](cons.tail(), f, f(acc, cons.head()))
+      else
+        acc
+      end
     else
       acc
     end
 
-  fun every(f: Fn1[A!,Bool]): Bool ? =>
+  fun every(f: Fn1[A!,Bool]): Bool =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _every(cur, f)
-  fun _every(l: List[A], f: Fn1[A!,Bool]): Bool ? =>
+  fun _every(l: List[A], f: Fn1[A!,Bool]): Bool =>
     match l
     | let cons: LCons[A] =>
-      if (f(cons.head())) then
-        _every(cons.tail(), f)
+      try
+        if (f(cons.head())) then
+          _every(cons.tail(), f)
+        else
+          false
+        end
       else
-        false
+        true
       end
     else
       true
     end
 
-  fun exists(f: Fn1[A!,Bool]): Bool ? =>
+  fun exists(f: Fn1[A!,Bool]): Bool =>
     let cur: List[A] = LCons[A](this.head(), this.tail())
     _exists(cur, f)
-  fun _exists(l: List[A], f: Fn1[A!,Bool]): Bool ? =>
+
+  fun _exists(l: List[A], f: Fn1[A!,Bool]): Bool =>
     match l
     | let cons: LCons[A] =>
-      if (f(cons.head())) then
-        true
+      try
+        if (f(cons.head())) then
+          true
+        else
+          _exists(cons.tail(), f)
+        end
       else
-        _exists(cons.tail(), f)
+        false
       end
     else
       false
