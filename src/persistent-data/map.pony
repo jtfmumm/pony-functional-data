@@ -4,6 +4,9 @@ interface Hashable
   """
   fun hash(): U64
 
+
+//type Map[K: (Hashable val & Equatable[K] val), V: Any val] is (LeafNode[K,V] | MultiLeafNode[K,V] | MapNode[K,V])
+
 trait val Map[K: (Hashable val & Equatable[K] val), V: Any val]
   fun size(): U64
   fun _is_leaf(): Bool
@@ -30,6 +33,7 @@ trait val Map[K: (Hashable val & Equatable[K] val), V: Any val]
 
 primitive Maps
   fun val empty[K: (Hashable val & Equatable[K] val),V: Any val](): Map[K,V] => MapNode[K,V].empty()
+
   fun val from[K: (Hashable val & Equatable[K] val),V: Any val](pairs: Array[(K, V)]): Map[K,V] ? =>
     var newMap = empty[K,V]()
     for pair in pairs.values() do
@@ -37,6 +41,7 @@ primitive Maps
       newMap = newMap.put(k, v)
     end
     newMap
+
   fun _last_level(): U32 => 4
 
 class val LeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]

@@ -1,5 +1,50 @@
 type List[A: Any val] is (Cons[A] | Nil[A])
 
+primitive Lists
+  fun val empty[T: Any val](): List[T] => Nil[T]
+
+  fun val cons[T: Any val](a: T, t: List[T]): List[T] => Cons[T](consume a, t)
+
+  fun val apply[T: Any val](arr: Array[T]): List[T] =>
+    var lst = this.empty[T]()
+    for v in arr.values() do
+      lst = lst.prepend(v)
+    end
+    lst.reverse()
+
+  fun val flatten[T: Any val](l: List[List[T]]): List[T] => _flatten[T](l, Nil[T])
+
+  fun val _flatten[T: Any val](l: List[List[T]], acc: List[T]): List[T] =>
+    match l
+    | let cns: Cons[List[T]] =>
+      _flatten[T](cns.tail(), _rev_prepend[T](cns.head(), acc))
+    else
+      acc.reverse()
+    end
+
+  fun val _rev_prepend[T: Any val](l: List[T], target_l: List[T]): List[T] =>
+    // Prepends l in reverse order onto target
+    match l
+    | let cns: Cons[T] =>
+      _rev_prepend[T](cns.tail(), target_l.prepend(cns.head()))
+    else
+      target_l
+    end
+
+  fun eq[T: Equatable[T] val](l1: List[T], l2: List[T]): Bool ? =>
+    if (l1.is_empty() and l2.is_empty()) then
+      true
+    elseif (l1.is_empty() and l2.is_non_empty()) then
+      false
+    elseif (l1.is_non_empty() and l2.is_empty()) then
+      false
+    elseif (l1.head() != l2.head()) then
+      false
+    else
+      eq[T](l1.tail(), l2.tail())
+    end
+
+
 primitive Nil[A: Any val]
   fun size(): U64 => 0
 
@@ -244,47 +289,3 @@ class val Cons[A: Any val]
       end
     end
     res.reverse()
-
-primitive Lists
-  fun val empty[T: Any val](): List[T] => Nil[T]
-
-  fun val cons[T: Any val](a: T, t: List[T]): List[T] => Cons[T](consume a, t)
-
-  fun val apply[T: Any val](arr: Array[T]): List[T] =>
-    var lst = this.empty[T]()
-    for v in arr.values() do
-      lst = lst.prepend(v)
-    end
-    lst.reverse()
-
-  fun val flatten[T: Any val](l: List[List[T]]): List[T] => _flatten[T](l, Nil[T])
-
-  fun val _flatten[T: Any val](l: List[List[T]], acc: List[T]): List[T] =>
-    match l
-    | let cns: Cons[List[T]] =>
-      _flatten[T](cns.tail(), _rev_prepend[T](cns.head(), acc))
-    else
-      acc.reverse()
-    end
-
-  fun val _rev_prepend[T: Any val](l: List[T], target_l: List[T]): List[T] =>
-    // Prepends l in reverse order onto target
-    match l
-    | let cns: Cons[T] =>
-      _rev_prepend[T](cns.tail(), target_l.prepend(cns.head()))
-    else
-      target_l
-    end
-
-  fun eq[T: Equatable[T] val](l1: List[T], l2: List[T]): Bool ? =>
-    if (l1.is_empty() and l2.is_empty()) then
-      true
-    elseif (l1.is_empty() and l2.is_non_empty()) then
-      false
-    elseif (l1.is_non_empty() and l2.is_empty()) then
-      false
-    elseif (l1.head() != l2.head()) then
-      false
-    else
-      eq[T](l1.tail(), l2.tail())
-    end
