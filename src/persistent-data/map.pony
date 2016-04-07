@@ -305,8 +305,7 @@ primitive _BitOps
     if (bit == 0) then false else true end
 
   fun arrayIdxFor(bmap: U32, idx: U32): USize =>
-   // Using 0xFFFFFFFF to generate mask
-   let mask = not(4294967295 << idx)
+   let mask = not(0xFFFF_FFFF << idx)
     ((mask and bmap).popcount()).usize()
 
   fun flipIndexedBitOn(bmap: U32, idx: U32): U32 => (1 << idx) or bmap
