@@ -11,19 +11,19 @@ primitive Nil[A: Any val]
 
   fun tail(): List[A] ? => error
 
-  fun reverse(): List[A] => this
+  fun reverse(): Nil[A] => this
 
-  fun prepend(a: A): List[A] => Cons[A](consume a, this)
+  fun prepend(a: A): Cons[A] => Cons[A](consume a, this)
 
   fun concat(l: List[A]): List[A] => l
 
-  fun map[B: Any val](f: {(A!): B^} box): List[B] => Nil[B]
+  fun map[B: Any val](f: {(A!): B^} box): Nil[B] => Nil[B]
 
-  fun flat_map[B: Any val](f: {(A!): List[B]} box): List[B] => Nil[B]
+  fun flat_map[B: Any val](f: {(A!): List[B]} box): Nil[B] => Nil[B]
 
   fun for_each(f: {(A!)} box) => None
 
-  fun filter(f: {(A!): Bool} box): List[A] => this
+  fun filter(f: {(A!): Bool} box): Nil[A] => this
 
   fun fold[B: Any val](f: {(B!, A!): B^} box, acc: B): B => acc
 
@@ -31,16 +31,16 @@ primitive Nil[A: Any val]
 
   fun exists(f: {(A!): Bool} box): Bool => false
 
-  fun partition(f: {(A!): Bool} box): (List[A], List[A]) =>
+  fun partition(f: {(A!): Bool} box): (Nil[A], Nil[A]) =>
     (this, this)
 
-  fun drop(n: U64): List[A] => this
+  fun drop(n: U64): Nil[A] => this
 
-  fun drop_while(f: {(A!): Bool} box): List[A] => this
+  fun drop_while(f: {(A!): Bool} box): Nil[A] => this
 
-  fun take(n: U64): List[A] => this
+  fun take(n: U64): Nil[A] => this
 
-  fun take_while(f: {(A!): Bool} box): List[A] => this
+  fun take_while(f: {(A!): Bool} box): Nil[A] => this
 
 class val Cons[A: Any val]
   let _size: U64
@@ -72,7 +72,7 @@ class val Cons[A: Any val]
       acc
     end
 
-  fun val prepend(a: A): List[A] => Cons[A](consume a, this)
+  fun val prepend(a: A): Cons[A] => Cons[A](consume a, this)
 
   fun val concat(l: List[A]): List[A] => _concat(l, this.reverse())
 
