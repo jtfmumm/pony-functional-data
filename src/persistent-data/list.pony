@@ -1,50 +1,29 @@
-trait val List[A: Any val]
-  fun apply[T: Any val]() => recover val LNil[T] end
-  fun size(): U64
-  fun is_empty(): Bool
-  fun is_non_empty(): Bool => not(is_empty())
-  fun head(): A ?
-  fun tail(): List[A] ?
-  fun val reverse(): List[A]
-  fun val prepend(a: A): List[A]
-  fun val concat(l: List[A]): List[A]
-  fun val map[B: Any val](f: {(A!): B^} box): List[B]
-  fun val flat_map[B: Any val](f: {(A!): List[B]} box): List[B]
-  fun val for_each(f: {(A!)} box)
-  fun val filter(f: {(A!): Bool} box): List[A]
-  fun val fold[B: Any val](f: {(B!,A!): B^} box, acc: B): B
-  fun val every(f: {(A!): Bool} box): Bool
-  fun val exists(f: {(A!): Bool} box): Bool
-  fun val partition(f: {(A!): Bool} box): (List[A], List[A])
-  fun val drop(n: U64): List[A]
-  fun val drop_while(f: {(A!): Bool} box): List[A]
-  fun val take(n: U64): List[A]
-  fun val take_while(f: {(A!): Bool} box): List[A]
+type List[A: Any val] is (Cons[A] | Nil[A])
 
-class val LNil[A: Any val] is List[A]
-  new create() => this
-
+primitive Nil[A: Any val]
   fun size(): U64 => 0
 
   fun is_empty(): Bool => true
+
+  fun is_non_empty(): Bool => false
 
   fun head(): A ? => error
 
   fun tail(): List[A] ? => error
 
-  fun reverse(): List[A] => Lists.empty[A]()
+  fun reverse(): List[A] => this
 
-  fun prepend(a: A): List[A] => LCons[A](consume a, Lists.empty[A]())
+  fun prepend(a: A): List[A] => Cons[A](consume a, this)
 
   fun concat(l: List[A]): List[A] => l
 
-  fun map[B: Any val](f: {(A!): B^} box): List[B] => Lists.empty[B]()
+  fun map[B: Any val](f: {(A!): B^} box): List[B] => Nil[B]
 
-  fun flat_map[B: Any val](f: {(A!): List[B]} box): List[B] => Lists.empty[B]()
+  fun flat_map[B: Any val](f: {(A!): List[B]} box): List[B] => Nil[B]
 
   fun for_each(f: {(A!)} box) => None
 
-  fun filter(f: {(A!): Bool} box): List[A] => Lists.empty[A]()
+  fun filter(f: {(A!): Bool} box): List[A] => this
 
   fun fold[B: Any val](f: {(B!, A!): B^} box, acc: B): B => acc
 
@@ -53,17 +32,17 @@ class val LNil[A: Any val] is List[A]
   fun exists(f: {(A!): Bool} box): Bool => false
 
   fun partition(f: {(A!): Bool} box): (List[A], List[A]) =>
-    (Lists.empty[A](), Lists.empty[A]())
+    (this, this)
 
-  fun drop(n: U64): List[A] => Lists.empty[A]()
+  fun drop(n: U64): List[A] => this
 
-  fun drop_while(f: {(A!): Bool} box): List[A] => Lists.empty[A]()
+  fun drop_while(f: {(A!): Bool} box): List[A] => this
 
-  fun take(n: U64): List[A] => Lists.empty[A]()
+  fun take(n: U64): List[A] => this
 
-  fun take_while(f: {(A!): Bool} box): List[A] => Lists.empty[A]()
+  fun take_while(f: {(A!): Bool} box): List[A] => this
 
-class val LCons[A: Any val] is List[A]
+class val Cons[A: Any val]
   let _size: U64
   let _head: A
   let _tail: List[A] val
@@ -77,6 +56,8 @@ class val LCons[A: Any val] is List[A]
 
   fun is_empty(): Bool => false
 
+  fun is_non_empty(): Bool => true
+
   fun head(): A => _head
 
   fun tail(): List[A] => _tail
@@ -86,18 +67,18 @@ class val LCons[A: Any val] is List[A]
 
   fun val _reverse(l: List[A], acc: List[A]): List[A] =>
     match l
-    | let cons: LCons[A] => _reverse(cons.tail(), acc.prepend(cons.head()))
+    | let cons: Cons[A] => _reverse(cons.tail(), acc.prepend(cons.head()))
     else
       acc
     end
 
-  fun val prepend(a: A): List[A] => LCons[A](consume a, this)
+  fun val prepend(a: A): List[A] => Cons[A](consume a, this)
 
   fun val concat(l: List[A]): List[A] => _concat(l, this.reverse())
 
   fun val _concat(l: List[A], acc: List[A]): List[A] =>
     match l
-    | let cons: LCons[A] => _concat(cons.tail(), acc.prepend(cons.head()))
+    | let cons: Cons[A] => _concat(cons.tail(), acc.prepend(cons.head()))
     else
       acc.reverse()
     end
@@ -107,7 +88,7 @@ class val LCons[A: Any val] is List[A]
 
   fun _map[B: Any val](l: List[A], f: {(A!): B^} box, acc: List[B]): List[B] =>
     match l
-    | let cons: LCons[A] => _map[B](cons.tail(), f, acc.prepend(f(cons.head())))
+    | let cons: Cons[A] => _map[B](cons.tail(), f, acc.prepend(f(cons.head())))
     else
       acc.reverse()
     end
@@ -117,7 +98,7 @@ class val LCons[A: Any val] is List[A]
 
   fun _flat_map[B: Any val](l: List[A], f: {(A!): List[B]} box, acc: List[B]): List[B] =>
     match l
-    | let cons: LCons[A] => _flat_map[B](cons.tail(), f, Lists._rev_prepend[B](f(cons.head()), acc))
+    | let cons: Cons[A] => _flat_map[B](cons.tail(), f, Lists._rev_prepend[B](f(cons.head()), acc))
     else
       acc.reverse()
     end
@@ -127,7 +108,7 @@ class val LCons[A: Any val] is List[A]
 
   fun _for_each(l: List[A], f: {(A!)} box) =>
     match l
-    | let cons: LCons[A] =>
+    | let cons: Cons[A] =>
       f(cons.head())
       _for_each(cons.tail(), f)
     end
@@ -137,7 +118,7 @@ class val LCons[A: Any val] is List[A]
 
   fun _filter(l: List[A], f: {(A!): Bool} box, acc: List[A]): List[A] =>
     match l
-    | let cons: LCons[A] =>
+    | let cons: Cons[A] =>
       if (f(cons.head())) then
         _filter(cons.tail(), f, acc.prepend(cons.head()))
       else
@@ -152,7 +133,7 @@ class val LCons[A: Any val] is List[A]
 
   fun _fold[B: Any val](l: List[A], f: {(B!, A!): B^} box, acc: B): B =>
     match l
-    | let cons: LCons[A] =>
+    | let cons: Cons[A] =>
       _fold[B](cons.tail(), f, f(acc, cons.head()))
     else
       acc
@@ -163,7 +144,7 @@ class val LCons[A: Any val] is List[A]
 
   fun _every(l: List[A], f: {(A!): Bool} box): Bool =>
     match l
-    | let cons: LCons[A] =>
+    | let cons: Cons[A] =>
       if (f(cons.head())) then
         _every(cons.tail(), f)
       else
@@ -178,7 +159,7 @@ class val LCons[A: Any val] is List[A]
 
   fun _exists(l: List[A], f: {(A!): Bool} box): Bool =>
     match l
-    | let cons: LCons[A] =>
+    | let cons: Cons[A] =>
       if (f(cons.head())) then
         true
       else
@@ -194,7 +175,7 @@ class val LCons[A: Any val] is List[A]
     var cur: List[A] = this
     while(true) do
       match cur
-      | let cons: LCons[A] =>
+      | let cons: Cons[A] =>
         let next = cons.head()
         if (f(next)) then hits = hits.prepend(next) else misses = misses.prepend(next) end
         cur = cons.tail()
@@ -210,7 +191,7 @@ class val LCons[A: Any val] is List[A]
     var count = n
     while(count > 0) do
       match cur
-      | let cons: LCons[A] =>
+      | let cons: Cons[A] =>
         cur = cons.tail()
         count = count - 1
       end
@@ -221,7 +202,7 @@ class val LCons[A: Any val] is List[A]
     var cur: List[A] = this
     while(true) do
       match cur
-      | let cons: LCons[A] =>
+      | let cons: Cons[A] =>
         if f(cons.head()) then cur = cons.tail() else break end
       else
         return Lists.empty[A]()
@@ -236,7 +217,7 @@ class val LCons[A: Any val] is List[A]
     var res = Lists.empty[A]()
     while(count > 0) do
       match cur
-      | let cons: LCons[A] =>
+      | let cons: Cons[A] =>
         res = res.prepend(cons.head())
         cur = cons.tail()
       else
@@ -251,7 +232,7 @@ class val LCons[A: Any val] is List[A]
     var res = Lists.empty[A]()
     while(true) do
       match cur
-      | let cons: LCons[A] =>
+      | let cons: Cons[A] =>
         if f(cons.head()) then
           res = res.prepend(cons.head())
           cur = cons.tail()
@@ -265,9 +246,9 @@ class val LCons[A: Any val] is List[A]
     res.reverse()
 
 primitive Lists
-  fun val empty[T: Any val](): List[T] => recover val LNil[T] end
+  fun val empty[T: Any val](): List[T] => Nil[T]
 
-  fun val cons[T: Any val](a: T, t: List[T]): List[T] => LCons[T](consume a, t)
+  fun val cons[T: Any val](a: T, t: List[T]): List[T] => Cons[T](consume a, t)
 
   fun val apply[T: Any val](arr: Array[T]): List[T] =>
     var lst = this.empty[T]()
@@ -280,7 +261,7 @@ primitive Lists
 
   fun val _flatten[T: Any val](l: List[List[T]], acc: List[T]): List[T] =>
     match l
-    | let cns: LCons[List[T]] =>
+    | let cns: Cons[List[T]] =>
       _flatten[T](cns.tail(), _rev_prepend[T](cns.head(), acc))
     else
       acc.reverse()
@@ -289,7 +270,7 @@ primitive Lists
   fun val _rev_prepend[T: Any val](l: List[T], target_l: List[T]): List[T] =>
     // Prepends l in reverse order onto target
     match l
-    | let cns: LCons[T] =>
+    | let cns: Cons[T] =>
       _rev_prepend[T](cns.tail(), target_l.prepend(cns.head()))
     else
       target_l
