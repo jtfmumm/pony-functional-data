@@ -33,8 +33,8 @@ primitive Maps
   fun val from[K: (Hashable val & Equatable[K] val),V: Any val](pairs: Array[(K, V)]): Map[K,V] ? =>
     var newMap = empty[K,V]()
     var count: USize = 0
-    while(count < pairs.size()) do
-      (let k, let v) = pairs(count)
+    for pair in pairs.values() do
+      (let k, let v) = pair
       newMap = newMap.put(k, v)
       count = count + 1
     end
