@@ -306,12 +306,10 @@ primitive _BitOps
     let bit = (bmap >> idx) and 1
     if (bit == 0) then false else true end
 
-  fun countPop(n: U32): U32 => @"llvm.ctpop.i32"[U32](n)
-
   fun arrayIdxFor(bmap: U32, idx: U32): USize =>
    // Using 0xFFFFFFFF to generate mask
    let mask = not(4294967295 << idx)
-    (countPop(mask and bmap)).usize()
+    ((mask and bmap).popcount()).usize()
 
   fun flipIndexedBitOn(bmap: U32, idx: U32): U32 => (1 << idx) or bmap
   fun flipIndexedBitOff(bmap: U32, idx: U32): U32 => not(1 << idx) and bmap

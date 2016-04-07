@@ -292,15 +292,6 @@ class iso _TestBitOps is UnitTest
     h.assert_eq[U32](d3, 8)
     h.assert_eq[U32](d4, 24)
 
-    let e0 = _BitOps.countPop(13)
-    let e1 = _BitOps.countPop(8)
-    let e2 = _BitOps.countPop(11)
-    let e3 = _BitOps.countPop(15)
-    h.assert_eq[U32](e0, 3)
-    h.assert_eq[U32](e1, 1)
-    h.assert_eq[U32](e2, 3)
-    h.assert_eq[U32](e3, 4)
-
     //1100 00011 11101 01001 10111 or 12711223
     let f0 = _BitOps.arrayIdxFor(12711223, 0)
     let f1 = _BitOps.arrayIdxFor(12711223, 5)
