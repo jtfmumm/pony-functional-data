@@ -269,7 +269,7 @@ primitive Lists
 
   fun val cons[T: Any val](a: T, t: List[T]): List[T] => LCons[T](consume a, t)
 
-  fun val from[T: Any val](arr: Array[T]): List[T] =>
+  fun val apply[T: Any val](arr: Array[T]): List[T] =>
     var lst = this.empty[T]()
     for v in arr.values() do
       lst = lst.prepend(v)
