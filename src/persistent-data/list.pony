@@ -63,7 +63,7 @@ class val Cons[A: Any val]
   fun tail(): List[A] => _tail
 
   fun val reverse(): List[A] =>
-    _reverse(this, Lists.empty[A]())
+    _reverse(this, Nil[A])
 
   fun val _reverse(l: List[A], acc: List[A]): List[A] =>
     match l
@@ -84,7 +84,7 @@ class val Cons[A: Any val]
     end
 
   fun val map[B: Any val](f: {(A!): B^} box): List[B] =>
-    _map[B](this, f, Lists.empty[B]())
+    _map[B](this, f, Nil[B])
 
   fun _map[B: Any val](l: List[A], f: {(A!): B^} box, acc: List[B]): List[B] =>
     match l
@@ -94,7 +94,7 @@ class val Cons[A: Any val]
     end
 
   fun val flat_map[B: Any val](f: {(A!): List[B]} box): List[B] =>
-    _flat_map[B](this, f, Lists.empty[B]())
+    _flat_map[B](this, f, Nil[B])
 
   fun _flat_map[B: Any val](l: List[A], f: {(A!): List[B]} box, acc: List[B]): List[B] =>
     match l
@@ -114,7 +114,7 @@ class val Cons[A: Any val]
     end
 
   fun val filter(f: {(A!): Bool} box): List[A] =>
-    _filter(this, f, Lists.empty[A]())
+    _filter(this, f, Nil[A])
 
   fun _filter(l: List[A], f: {(A!): Bool} box, acc: List[A]): List[A] =>
     match l
@@ -170,8 +170,8 @@ class val Cons[A: Any val]
     end
 
   fun val partition(f: {(A!): Bool} box): (List[A], List[A]) =>
-    var hits = Lists.empty[A]()
-    var misses = Lists.empty[A]()
+    var hits: List[A] = Nil[A]
+    var misses: List[A] = Nil[A]
     var cur: List[A] = this
     while(true) do
       match cur
@@ -187,7 +187,7 @@ class val Cons[A: Any val]
 
   fun val drop(n: U64): List[A] =>
     var cur: List[A] = this
-    if cur.size() <= n then return Lists.empty[A]() end
+    if cur.size() <= n then return Nil[A] end
     var count = n
     while(count > 0) do
       match cur
@@ -205,7 +205,7 @@ class val Cons[A: Any val]
       | let cons: Cons[A] =>
         if f(cons.head()) then cur = cons.tail() else break end
       else
-        return Lists.empty[A]()
+        return Nil[A]
       end
     end
     cur
@@ -214,7 +214,7 @@ class val Cons[A: Any val]
     var cur: List[A] = this
     if cur.size() <= n then return cur end
     var count = n
-    var res = Lists.empty[A]()
+    var res: List[A] = Nil[A]
     while(count > 0) do
       match cur
       | let cons: Cons[A] =>
@@ -229,7 +229,7 @@ class val Cons[A: Any val]
 
   fun val take_while(f: {(A!): Bool} box): List[A] =>
     var cur: List[A] = this
-    var res = Lists.empty[A]()
+    var res: List[A] = Nil[A]
     while(true) do
       match cur
       | let cons: Cons[A] =>
@@ -257,7 +257,7 @@ primitive Lists
     end
     lst.reverse()
 
-  fun val flatten[T: Any val](l: List[List[T]]): List[T] => _flatten[T](l, Lists.empty[T]())
+  fun val flatten[T: Any val](l: List[List[T]]): List[T] => _flatten[T](l, Nil[T])
 
   fun val _flatten[T: Any val](l: List[List[T]], acc: List[T]): List[T] =>
     match l
