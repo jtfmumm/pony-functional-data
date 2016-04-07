@@ -296,7 +296,7 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
 
 // For 32-bit operations
 primitive _BitOps
-  fun maskLow(n: U32): U32 => n and 31
+  fun maskLow(n: U32): U32 => n and 0x1F
 
   fun bitmapIdxFor(hash: U32, level: U32): U32 => maskLow(hash >> (level * 5))
 
@@ -309,6 +309,7 @@ primitive _BitOps
     ((mask and bmap).popcount()).usize()
 
   fun flipIndexedBitOn(bmap: U32, idx: U32): U32 => (1 << idx) or bmap
+
   fun flipIndexedBitOff(bmap: U32, idx: U32): U32 => not(1 << idx) and bmap
 
 primitive MapHelpers
