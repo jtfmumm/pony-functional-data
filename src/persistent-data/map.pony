@@ -32,11 +32,9 @@ primitive Maps
   fun val empty[K: (Hashable val & Equatable[K] val),V: Any val](): Map[K,V] => MapNode[K,V].empty()
   fun val from[K: (Hashable val & Equatable[K] val),V: Any val](pairs: Array[(K, V)]): Map[K,V] ? =>
     var newMap = empty[K,V]()
-    var count: USize = 0
     for pair in pairs.values() do
       (let k, let v) = pair
       newMap = newMap.put(k, v)
-      count = count + 1
     end
     newMap
   fun _last_level(): U32 => 4
@@ -63,19 +61,20 @@ class val LeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
     if (k == _key) then
       LeafNode[K,V](k, v) as Map[K,V]
     else
-      let tempNode = MapNode[K,V].empty().put(_key, _value)
-      tempNode.put(k, v)
+      let mapNode = MapNode[K,V].empty().put(_key, _value)
+      mapNode.put(k, v)
     end
 
   fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] ? =>
     if (k == _key) then
       LeafNode[K,V](k, v) as Map[K,V]
     else
-      let tempNode = MapNode[K,V].empty()._putWithHash(_key, _value, MapHelpers._hash[K](_key), level)
-      tempNode._putWithHash(k, v, hash, level)
+      let mapNode = MapNode[K,V].empty()._putWithHash(_key, _value, MapHelpers._hash[K](_key), level)
+      mapNode._putWithHash(k, v, hash, level)
     end
 
   fun remove(k: K): Map[K,V] ? => error
+
   fun _removeWithHash(k: K, hash: U32, level: U32): Map[K,V] ? => error
 
 class val Entry[K: (Hashable val & Equatable[K] val),V: Any val]
@@ -85,7 +84,6 @@ class val Entry[K: (Hashable val & Equatable[K] val),V: Any val]
   new val create(k: K, v: V) =>
     key = k
     value = v
-
 
 class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
   let _entries: List[Entry[K,V]]
@@ -129,6 +127,8 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
       MultiLeafNode[K,V].from(newEntries)
     end
 
+  fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] => put(k, v)
+
   fun _updateEntry(k: K, v: V, es: List[Entry[K,V]], acc: List[Entry[K,V]]): Map[K,V] =>
     try
       let next = es.head()
@@ -142,8 +142,6 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
     else
       MultiLeafNode[K,V].from(acc)
     end
-
-  fun _putWithHash(k: K, v: V, hash: U32, level: U32): Map[K,V] => put(k, v)
 
   fun _removeEntry(k: K, es: List[Entry[K,V]], acc: List[Entry[K,V]]): Map[K,V] =>
     try
@@ -243,7 +241,7 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
       newArray.push(arr(aboveArr))
       aboveArr = aboveArr + 1
     end
-    consume newArray
+    newArray
 
   fun _overwriteInArrayAt(arr: Array[Map[K,V]] val, node: Map[K,V], idx: USize): Array[Map[K,V]] val ? =>
     var belowArr: USize = 0
@@ -258,7 +256,7 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
       newArray.push(arr(aboveArr))
       aboveArr = aboveArr + 1
     end
-    consume newArray
+    newArray
 
   fun _removeInArrayAt(arr: Array[Map[K,V]] val, idx: USize): Array[Map[K,V]] val ? =>
     var belowArr: USize = 0
@@ -272,29 +270,29 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
       newArray.push(arr(aboveArr))
       aboveArr = aboveArr + 1
     end
-    consume newArray
+    newArray
 
   fun remove(k: K): Map[K,V] ? =>
-    if (contains(k)) then _removeWithHash(k, MapHelpers._hash[K](k), 0) else MapNode[K,V](_bitmap, _pointers) end
+    if (contains(k)) then _removeWithHash(k, MapHelpers._hash[K](k), 0) else this as Map[K,V] end
 
   fun _removeWithHash(k: K, hash: U32, level: U32): Map[K,V] ? =>
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
     let arrayIdx: USize = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
     if (level >= Maps._last_level()) then
       let newNode = _pointers(arrayIdx).remove(k)
-      return MapNode[K,V](_bitmap, _overwriteInArrayAt(_pointers, newNode, arrayIdx))
-    end
-    let target = _pointers(arrayIdx)
-    if (target._is_leaf()) then
-      let newBMap = _BitOps.flipIndexedBitOff(_bitmap, bmapIdx)
-      let newArray = _removeInArrayAt(_pointers, arrayIdx)
-      MapNode[K,V](newBMap, newArray)
+      MapNode[K,V](_bitmap, _overwriteInArrayAt(_pointers, newNode, arrayIdx))
     else
-      let newNode = target._removeWithHash(k, hash, level + 1)
-      let newArray = _overwriteInArrayAt(_pointers, newNode, arrayIdx)
-      MapNode[K,V](_bitmap, newArray)
+      let target = _pointers(arrayIdx)
+      if (target._is_leaf()) then
+        let newBMap = _BitOps.flipIndexedBitOff(_bitmap, bmapIdx)
+        let newArray = _removeInArrayAt(_pointers, arrayIdx)
+        MapNode[K,V](newBMap, newArray)
+      else
+        let newNode = target._removeWithHash(k, hash, level + 1)
+        let newArray = _overwriteInArrayAt(_pointers, newNode, arrayIdx)
+        MapNode[K,V](_bitmap, newArray)
+      end
     end
-
 
 // For 32-bit operations
 primitive _BitOps
@@ -316,11 +314,9 @@ primitive _BitOps
 
 primitive MapHelpers
   fun sumArraySizes[K: (Hashable val & Equatable[K] val),V: Any val](arr: Array[Map[K,V]] val): U64 =>
-    var count: USize = 0
     var sum: U64 = 0
     for m in arr.values() do
       sum = sum + m.size()
-      count = count + 1
     end
     sum
 
