@@ -309,7 +309,7 @@ class iso _TestHAMTMap is UnitTest
 
   fun apply(h: TestHelper) =>
     let m1: Map[String,U32] = Maps.empty[String,U32]()
-    h.assert_error(lambda()(m1 = m1)? => m1.get("a") end)
+    h.assert_error(lambda()(m1)? => m1.get("a") end)
     let s1 = m1.size()
     h.assert_eq[U64](s1, 0)
 
