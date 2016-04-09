@@ -1,16 +1,24 @@
 type List[A] is (Cons[A] | Nil[A])
 
 primitive Lists[A]
-  fun val empty(): List[A] => Nil[A]
+  fun empty(): List[A] => Nil[A]
 
-  fun val cons(a: val->A, t: List[A]): List[A] => Cons[A](consume a, t)
+  fun cons(h: val->A, t: List[A]): List[A] => Cons[A](h, t)
 
-  fun val apply(arr: Array[val->A]): List[A] =>
-    var lst = this.empty()
-    for v in arr.values() do
-      lst = lst.prepend(v)
+  fun apply(arr: Array[val->A]): List[A] =>
+     var lst = this.empty()
+     for v in arr.values() do
+       lst = lst.prepend(v)
+     end
+     lst.reverse()
+
+  fun from(iter: Iterator[val->A]): List[A] =>
+    var l: List[A] = Nil[A]
+
+    for i in iter do
+      l = Cons[A](i, l)
     end
-    lst.reverse()
+    l
 
   fun eq[T: Equatable[T] val = A](l1: List[T], l2: List[T]): Bool ? =>
     if (l1.is_empty() and l2.is_empty()) then
