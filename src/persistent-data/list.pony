@@ -12,17 +12,6 @@ primitive Lists[A]
     end
     lst.reverse()
 
-  fun val _rev_prepend[B](l: List[B], target: List[B]): List[B] =>
-    // Prepends l in reverse order onto target
-    match l
-    | let cns: Cons[B] =>
-      _rev_prepend[B](cns.tail(), target.prepend(cns.head()))
-    else
-      target
-    end
-
-
-
   fun eq[T: Equatable[T] val = A](l1: List[T], l2: List[T]): Bool ? =>
     if (l1.is_empty() and l2.is_empty()) then
       true
