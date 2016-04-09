@@ -1,37 +1,29 @@
-type List[A: Any val] is (Cons[A] | Nil[A])
+type List[A] is (Cons[A] | Nil[A])
 
-primitive Lists
-  fun val empty[T: Any val](): List[T] => Nil[T]
+primitive Lists[A]
+  fun val empty(): List[A] => Nil[A]
 
-  fun val cons[T: Any val](a: T, t: List[T]): List[T] => Cons[T](consume a, t)
+  fun val cons(a: val->A, t: List[A]): List[A] => Cons[A](consume a, t)
 
-  fun val apply[T: Any val](arr: Array[T]): List[T] =>
-    var lst = this.empty[T]()
+  fun val apply(arr: Array[val->A]): List[A] =>
+    var lst = this.empty()
     for v in arr.values() do
       lst = lst.prepend(v)
     end
     lst.reverse()
 
-  fun val flatten[T: Any val](l: List[List[T]]): List[T] => _flatten[T](l, Nil[T])
-
-  fun val _flatten[T: Any val](l: List[List[T]], acc: List[T]): List[T] =>
-    match l
-    | let cns: Cons[List[T]] =>
-      _flatten[T](cns.tail(), _rev_prepend[T](cns.head(), acc))
-    else
-      acc.reverse()
-    end
-
-  fun val _rev_prepend[T: Any val](l: List[T], target_l: List[T]): List[T] =>
+  fun val _rev_prepend[B](l: List[B], target: List[B]): List[B] =>
     // Prepends l in reverse order onto target
     match l
-    | let cns: Cons[T] =>
-      _rev_prepend[T](cns.tail(), target_l.prepend(cns.head()))
+    | let cns: Cons[B] =>
+      _rev_prepend[B](cns.tail(), target.prepend(cns.head()))
     else
-      target_l
+      target
     end
 
-  fun eq[T: Equatable[T] val](l1: List[T], l2: List[T]): Bool ? =>
+
+
+  fun eq[T: Equatable[T] val = A](l1: List[T], l2: List[T]): Bool ? =>
     if (l1.is_empty() and l2.is_empty()) then
       true
     elseif (l1.is_empty() and l2.is_non_empty()) then
@@ -44,67 +36,43 @@ primitive Lists
       eq[T](l1.tail(), l2.tail())
     end
 
-
-primitive Nil[A: Any val]
+primitive Nil[A]
   fun size(): U64 => 0
-
   fun is_empty(): Bool => true
-
   fun is_non_empty(): Bool => false
-
-  fun head(): A ? => error
-
+  fun head(): val->A ? => error
   fun tail(): List[A] ? => error
-
   fun reverse(): Nil[A] => this
-
-  fun prepend(a: A): Cons[A] => Cons[A](consume a, this)
-
+  fun prepend(a: val->A!): Cons[A] => Cons[A](consume a, this)
   fun concat(l: List[A]): List[A] => l
-
-  fun map[B: Any val](f: {(A!): B^} box): Nil[B] => Nil[B]
-
-  fun flat_map[B: Any val](f: {(A!): List[B]} box): Nil[B] => Nil[B]
-
-  fun for_each(f: {(A!)} box) => None
-
-  fun filter(f: {(A!): Bool} box): Nil[A] => this
-
-  fun fold[B: Any val](f: {(B!, A!): B^} box, acc: B): B => acc
-
-  fun every(f: {(A!): Bool} box): Bool => true
-
-  fun exists(f: {(A!): Bool} box): Bool => false
-
-  fun partition(f: {(A!): Bool} box): (Nil[A], Nil[A]) =>
+  fun map[B](f: {(val->A): val->B} box): Nil[B] => Nil[B]
+  fun flat_map[B](f: {(val->A): List[B]} box): Nil[B] => Nil[B]
+  fun for_each(f: {(val->A)} box) => None
+  fun filter(f: {(val->A): Bool} box): Nil[A] => this
+  fun fold[B](f: {(B, val->A): B^} box, acc: B): B => consume acc
+  fun every(f: {(val->A): Bool} box): Bool => true
+  fun exists(f: {(val->A): Bool} box): Bool => false
+  fun partition(f: {(val->A): Bool} box): (Nil[A], Nil[A]) =>
     (this, this)
-
   fun drop(n: U64): Nil[A] => this
-
-  fun drop_while(f: {(A!): Bool} box): Nil[A] => this
-
+  fun drop_while(f: {(val->A): Bool} box): Nil[A] => this
   fun take(n: U64): Nil[A] => this
+  fun take_while(f: {(val->A): Bool} box): Nil[A] => this
 
-  fun take_while(f: {(A!): Bool} box): Nil[A] => this
-
-class val Cons[A: Any val]
+class val Cons[A]
   let _size: U64
-  let _head: A
+  let _head: val->A
   let _tail: List[A] val
 
-  new val create(a: A, t: List[A]) =>
+  new val create(a: val->A, t: List[A]) =>
     _head = consume a
     _tail = consume t
     _size = 1 + _tail.size()
 
   fun size(): U64 => _size
-
   fun is_empty(): Bool => false
-
   fun is_non_empty(): Bool => true
-
-  fun head(): A => _head
-
+  fun head(): val->A => _head
   fun tail(): List[A] => _tail
 
   fun val reverse(): List[A] =>
@@ -117,7 +85,7 @@ class val Cons[A: Any val]
       acc
     end
 
-  fun val prepend(a: A): Cons[A] => Cons[A](consume a, this)
+  fun val prepend(a: val->A!): Cons[A] => Cons[A](consume a, this)
 
   fun val concat(l: List[A]): List[A] => _concat(l, this.reverse())
 
@@ -128,40 +96,64 @@ class val Cons[A: Any val]
       acc.reverse()
     end
 
-  fun val map[B: Any val](f: {(A!): B^} box): List[B] =>
+  fun val map[B](f: {(val->A): val->B} box): List[B] =>
     _map[B](this, f, Nil[B])
 
-  fun _map[B: Any val](l: List[A], f: {(A!): B^} box, acc: List[B]): List[B] =>
+  fun _map[B](l: List[A], f: {(val->A): val->B} box, acc: List[B]): List[B] =>
     match l
     | let cons: Cons[A] => _map[B](cons.tail(), f, acc.prepend(f(cons.head())))
     else
       acc.reverse()
     end
 
-  fun val flat_map[B: Any val](f: {(A!): List[B]} box): List[B] =>
+  fun val flat_map[B](f: {(val->A): List[B]} box): List[B] =>
     _flat_map[B](this, f, Nil[B])
 
-  fun _flat_map[B: Any val](l: List[A], f: {(A!): List[B]} box, acc: List[B]): List[B] =>
+  fun _flat_map[B](l: List[A], f: {(val->A): List[B]} box, acc: List[B]): List[B] =>
     match l
-    | let cons: Cons[A] => _flat_map[B](cons.tail(), f, Lists._rev_prepend[B](f(cons.head()), acc))
+    | let cons: Cons[A] => _flat_map[B](cons.tail(), f, _rev_prepend[B](f(cons.head()), acc))
     else
       acc.reverse()
     end
 
-  fun val for_each(f: {(A!)} box) =>
+  fun tag _rev_prepend[B](l: List[B], target: List[B]): List[B] =>
+    // Prepends l in reverse order onto target
+    match l
+    | let cns: Cons[B] =>
+      _rev_prepend[B](cns.tail(), target.prepend(cns.head()))
+    else
+      target
+    end
+
+//  fun val flatten[B](): List[B] ? =>
+//    match (_head, _tail)
+//    | (let h: List[B], let t: List[List[B]]) => _flatten[B](Cons[List[B]](h, t), Nil[B])
+//    else
+//      error
+//    end
+//
+//  fun val _flatten[B](l: List[List[B]], acc: List[B]): List[B] =>
+//    match l
+//    | let cns: Cons[List[B]] =>
+//      _flatten(cns.tail(), _rev_prepend[B](cns.head(), acc))
+//    else
+//      acc.reverse()
+//    end
+
+  fun val for_each(f: {(val->A)} box) =>
     _for_each(this, f)
 
-  fun _for_each(l: List[A], f: {(A!)} box) =>
+  fun _for_each(l: List[A], f: {(val->A)} box) =>
     match l
     | let cons: Cons[A] =>
       f(cons.head())
       _for_each(cons.tail(), f)
     end
 
-  fun val filter(f: {(A!): Bool} box): List[A] =>
+  fun val filter(f: {(val->A): Bool} box): List[A] =>
     _filter(this, f, Nil[A])
 
-  fun _filter(l: List[A], f: {(A!): Bool} box, acc: List[A]): List[A] =>
+  fun _filter(l: List[A], f: {(val->A): Bool} box, acc: List[A]): List[A] =>
     match l
     | let cons: Cons[A] =>
       if (f(cons.head())) then
@@ -173,21 +165,21 @@ class val Cons[A: Any val]
       acc.reverse()
     end
 
-  fun val fold[B: Any val](f: {(B!, A!): B^} box, acc: B): B =>
-    _fold[B](this, f, acc)
+  fun val fold[B](f: {(B, val->A): B^} box, acc: B): B =>
+    _fold[B](this, f, consume acc)
 
-  fun _fold[B: Any val](l: List[A], f: {(B!, A!): B^} box, acc: B): B =>
+  fun val _fold[B](l: List[A], f: {(B, val->A): B^} box, acc: B): B =>
     match l
     | let cons: Cons[A] =>
-      _fold[B](cons.tail(), f, f(acc, cons.head()))
+      _fold[B](cons.tail(), f, f(consume acc, cons.head()))
     else
       acc
     end
 
-  fun val every(f: {(A!): Bool} box): Bool =>
+  fun val every(f: {(val->A): Bool} box): Bool =>
     _every(this, f)
 
-  fun _every(l: List[A], f: {(A!): Bool} box): Bool =>
+  fun _every(l: List[A], f: {(val->A): Bool} box): Bool =>
     match l
     | let cons: Cons[A] =>
       if (f(cons.head())) then
@@ -199,10 +191,10 @@ class val Cons[A: Any val]
       true
     end
 
-  fun val exists(f: {(A!): Bool} box): Bool =>
+  fun val exists(f: {(val->A): Bool} box): Bool =>
     _exists(this, f)
 
-  fun _exists(l: List[A], f: {(A!): Bool} box): Bool =>
+  fun _exists(l: List[A], f: {(val->A): Bool} box): Bool =>
     match l
     | let cons: Cons[A] =>
       if (f(cons.head())) then
@@ -214,7 +206,7 @@ class val Cons[A: Any val]
       false
     end
 
-  fun val partition(f: {(A!): Bool} box): (List[A], List[A]) =>
+  fun val partition(f: {(val->A): Bool} box): (List[A], List[A]) =>
     var hits: List[A] = Nil[A]
     var misses: List[A] = Nil[A]
     var cur: List[A] = this
@@ -243,7 +235,7 @@ class val Cons[A: Any val]
     end
     cur
 
-  fun val drop_while(f: {(A!): Bool} box): List[A] =>
+  fun val drop_while(f: {(val->A): Bool} box): List[A] =>
     var cur: List[A] = this
     while(true) do
       match cur
@@ -272,7 +264,7 @@ class val Cons[A: Any val]
     end
     res.reverse()
 
-  fun val take_while(f: {(A!): Bool} box): List[A] =>
+  fun val take_while(f: {(val->A): Bool} box): List[A] =>
     var cur: List[A] = this
     var res: List[A] = Nil[A]
     while(true) do

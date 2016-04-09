@@ -94,7 +94,7 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
   let _entries: List[Entry[K,V]]
 
   new val create() =>
-    _entries = Lists.empty[Entry[K,V]]()
+    _entries = Lists[Entry[K,V]].empty()
 
   new val from(es: List[Entry[K,V]]) =>
     _entries = es
@@ -126,7 +126,7 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
       end
 
     if _entries.exists(test) then
-      _updateEntry(k, v, _entries, Lists.empty[Entry[K,V]]())
+      _updateEntry(k, v, _entries, Lists[Entry[K,V]].empty())
     else
       let newEntries = _entries.prepend(Entry[K,V](k,v))
       MultiLeafNode[K,V].from(newEntries)
@@ -161,7 +161,7 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[
       MultiLeafNode[K,V].from(acc)
     end
 
-  fun remove(k: K): Map[K,V] => _removeEntry(k, _entries, Lists.empty[Entry[K,V]]())
+  fun remove(k: K): Map[K,V] => _removeEntry(k, _entries, Lists[Entry[K,V]].empty())
 
   fun _removeWithHash(k: K, hash: U32, level: U32): Map[K,V] => remove(k)
 
@@ -278,7 +278,7 @@ class val MapNode[K: (Hashable val & Equatable[K] val),V: Any val] is Map[K,V]
     newArray
 
   fun remove(k: K): Map[K,V] ? =>
-    if (contains(k)) then _removeWithHash(k, MapHelpers._hash[K](k), 0) else this as Map[K,V] end
+    if contains(k) then _removeWithHash(k, MapHelpers._hash[K](k), 0) else this as Map[K,V] end
 
   fun _removeWithHash(k: K, hash: U32, level: U32): Map[K,V] ? =>
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
