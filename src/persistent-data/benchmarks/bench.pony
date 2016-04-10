@@ -31,7 +31,7 @@ primitive Bench
     while(count < iterations) do
       let k = kvs(count)._1
       let v = kvs(count)._2
-      pMap = pMap.put(k, v)
+      pMap = pMap.update(k, v)
       count = count + 1
     end
     perf_end = Time.millis()
@@ -57,7 +57,7 @@ primitive Bench
     Time.perf_begin()
     perf_begin = Time.millis()
     while(count < iterations) do
-      let pmv = pMap.get(kvs(count)._1)
+      let pmv = pMap(kvs(count)._1)
       count = count + 1
     end
     perf_end = Time.millis()
