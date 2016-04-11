@@ -4,20 +4,7 @@ interface Hashable
   """
   fun hash(): U64
 
-
-//type Map[K: (Hashable val & Equatable[K] val), V] is (LeafNode[K, V] | MultiLeafNode[K, V] | MapNode[K, V])
-
-trait val Map[K: (Hashable val & Equatable[K] val), V]
-  fun size(): U64
-  fun _is_leaf(): Bool
-  fun apply(k: K): val->V ?
-  fun _getWithHash(k: K, hash: U32, level: U32): val->V ?
-  fun getOrElse(k: K, alt: val->V): val->V
-  fun contains(k: K): Bool
-  fun update(k: K, v: val->V): Map[K, V] ?
-  fun _putWithHash(k: K, v: val->V, hash: U32, level: U32): Map[K, V] ?
-  fun remove(k: K): Map[K, V] ?
-  fun _removeWithHash(k: K, hash: U32, level: U32): Map[K, V] ?
+type Map[K: (Hashable val & Equatable[K] val), V] is (LeafNode[K, V] | MultiLeafNode[K, V] | MapNode[K, V])
 
 primitive Maps
   fun val empty[K: (Hashable val & Equatable[K] val), V](): Map[K, V] => MapNode[K, V].empty()
@@ -32,7 +19,7 @@ primitive Maps
 
   fun _last_level(): U32 => 4
 
-class val LeafNode[K: (Hashable val & Equatable[K] val), V] is Map[K, V]
+class val LeafNode[K: (Hashable val & Equatable[K] val), V]
   let _key: K
   let _value: val->V
 
@@ -93,7 +80,7 @@ class val Entry[K: (Hashable val & Equatable[K] val), V]
     key = k
     value = v
 
-class val MultiLeafNode[K: (Hashable val & Equatable[K] val), V] is Map[K, V]
+class val MultiLeafNode[K: (Hashable val & Equatable[K] val), V]
   let _entries: List[Entry[K, V]]
 
   new val create() =>
@@ -183,7 +170,7 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val), V] is Map[K, V]
       false
     end
 
-class val MapNode[K: (Hashable val & Equatable[K] val), V] is Map[K, V]
+class val MapNode[K: (Hashable val & Equatable[K] val), V]
   let _size: U64
   //Currently, 32-bit bitmap
   let _bitmap: U32

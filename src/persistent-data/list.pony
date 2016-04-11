@@ -1,3 +1,39 @@
+"""
+# Persistent List package
+
+A persistent list with functional transformations.
+
+## Usage
+
+```
+let empty = Lists[U32].empty()
+
+let l1 = empty.prepend(3)
+let l2 = l1.prepend(2)
+let l3 = l2.prepend(1)
+
+let lst = Lists[U32]([1, 2, 3])
+
+h.assert_eq[U32](l3, lst)
+
+let doubled = lst.map(lambda(x: U32): U32 => x * 2 end)
+
+
+```
+
+"""
+
+class RecoverTest
+  let size: USize val = 32
+
+  fun val new_array1(): Array[USize] trn =>
+    recover Array[USize].create(size) end
+
+  fun box new_array2(): Array[USize] trn =>
+    let local_size = size
+    recover Array[USize].create(local_size) end
+
+
 type List[A] is (Cons[A] | Nil[A])
 
 primitive Lists[A]

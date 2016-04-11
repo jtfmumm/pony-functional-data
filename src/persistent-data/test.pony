@@ -231,6 +231,20 @@ class iso _TestTakeWhile is UnitTest
     let empty = Lists[U32].empty()
     h.assert_true(Lists[U32].eq(l.take_while(is_even), Lists[U32]([4,2,6])))
     h.assert_true(Lists[U32].eq(empty.take_while(is_even), Lists[U32].empty()))
+
+
+    let e = Lists[U32].empty()
+
+    let l1 = e.prepend(3)
+    let l2 = l1.prepend(2)
+    let l3 = l2.prepend(1)
+
+    let lst = Lists[U32]([1, 2, 3])
+
+    h.assert_eq[List[U32]](l3, lst)
+
+    let doubled = lst.map[U32](lambda(x: U32): U32 => x * 2 end)
+
     true
 
 //class iso _TestContains is UnitTest
