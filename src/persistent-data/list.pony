@@ -182,6 +182,9 @@ primitive Nil[A]
     """
     this
 
+  fun val contains[T: (A & HasEq[A!] #read) = A](a: val->T): Bool =>
+    false
+
 class val Cons[A]
   """
   A list with a head and a tail, where the tail can be empty.
@@ -515,3 +518,22 @@ class val Cons[A]
       end
     end
     res.reverse()
+
+//  fun val contains[T: (A & HasEq[A!] #read) = A](a: val->T): Bool =>
+//    try
+//      _contains[T](this as List[T], a)
+//    else
+//      false
+//    end
+//
+//  fun val _contains[T: (A & HasEq[A] #read) = A](l: List[T], a: val->T): Bool =>
+//    match l
+//    | let cons: Cons[T] =>
+//      if l.head() == a then
+//        true
+//      else
+//        _contains(l.tail(), a)
+//      end
+//    else
+//      false
+//    end

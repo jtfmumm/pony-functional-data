@@ -32,6 +32,7 @@ actor Main is TestList
     test(_TestDropWhile)
     test(_TestTake)
     test(_TestTakeWhile)
+//    test(_TestContains)
     test(_TestBitOps)
     test(_TestHAMTMap)
     test(_TestMapVsMap)
@@ -232,6 +233,22 @@ class iso _TestTakeWhile is UnitTest
     h.assert_true(Lists[U32].eq(empty.take_while(is_even), Lists[U32].empty()))
     true
 
+//class iso _TestContains is UnitTest
+//  fun name(): String => "persistent-data/List/contains()"
+//
+//  fun apply(h: TestHelper) =>
+//    let l = Lists[String](["a","b","c"])
+//
+//    h.assert_true(l.contains("a"))
+//    h.assert_true(l.contains("b"))
+//    h.assert_true(l.contains("c"))
+//    h.assert_false(l.contains("d"))
+//    h.assert_false(l.contains("e"))
+//
+//    let empty = Lists[String].empty()
+//
+//    h.assert_false(empty.contains("a"))
+//    true
 
 class iso _TestBitOps is UnitTest
   fun name(): String => "persistent-data/_BitOps"
