@@ -6,18 +6,25 @@ A persistent list with functional transformations.
 ## Usage
 
 ```
-let empty = Lists[U32].empty()
+let l1 = Lists[U32]([2, 4, 6, 8]) // List(2, 4, 6, 8)
 
-let l1 = empty.prepend(3)
-let l2 = l1.prepend(2)
-let l3 = l2.prepend(1)
+let empty = Lists[U32].empty() // List()
 
-let lst = Lists[U32]([1, 2, 3])
+// prepend() returns a new List, leaving the
+// old list unchanged
+let l2 = empty.prepend(3) // List(3)
+let l3 = l2.prepend(2) // List(2, 3)
+let l4 = l3.prepend(1) // List(1, 2, 3)
+let l4_head = l4.head() // 1
+let l4_tail = l4.tail() // List(2, 3)
 
-h.assert_eq[U32](l3, lst)
+h.assert_eq[U32](l4_head, 1)
+h.assert_true(Lists[U32].eq(l4, Lists[U32]([1, 2, 3])))
+h.assert_true(Lists[U32].eq(l4_tail, Lists[U32]([2, 3])))
 
-let doubled = lst.map(lambda(x: U32): U32 => x * 2 end)
+let doubled = l4.map[U32](lambda(x: U32): U32 => x * 2 end)
 
+h.assert_true(Lists[U32].eq(doubled, Lists[U32]([2, 4, 6])))
 
 ```
 
@@ -220,6 +227,23 @@ primitive Nil[A]
 
   fun val contains[T: (A & HasEq[A!] #read) = A](a: val->T): Bool =>
     false
+//
+//  fun string[T: Stringable #read = A](): String =>
+//    "List()"
+//
+//  fun _string[T: Stringable #read = A](): String =>
+//    ""
+
+//
+//  fun eq[T: Equatable[T] val = A](other: List[T]): Bool =>
+//    """
+//    Checks whether two lists are equal.
+//    """
+//    match other
+//    | let n: Nil[T] => true
+//    else
+//      false
+//    end
 
 class val Cons[A]
   """
@@ -554,6 +578,33 @@ class val Cons[A]
       end
     end
     res.reverse()
+
+//  fun string[T: Stringable #read = A](): String =>
+//    try
+//      let h = (_head as T).string()
+//      "List(" + h + (_tail as List[T])._string() + ")"
+//    else
+//      "List()"
+//    end
+//
+//  fun _string[T: Stringable #read = A](): String =>
+//    try
+//      let h = (_head as T).string()
+//      ", " + h + _tail._string()
+//    else
+//      ""
+//    end
+
+//  fun eq[T: Equatable[T] val = A](other: List[T]): Bool =>
+//    """
+//    Checks whether two lists are equal.
+//    """
+//    match other
+//    | let cons: Cons[T] =>
+//      _head as T == other.head() and _tail as List[T] == other.tail()
+//    else
+//      false
+//    end
 
 //  fun val contains[T: (A & HasEq[A!] #read) = A](a: val->T): Bool =>
 //    try
