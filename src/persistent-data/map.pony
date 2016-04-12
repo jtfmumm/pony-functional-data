@@ -5,6 +5,23 @@ interface Hashable
   fun hash(): U64
 
 type Map[K: (Hashable val & Equatable[K] val), V] is (LeafNode[K, V] | MultiLeafNode[K, V] | MapNode[K, V])
+"""
+A persistent map based on Bagwell's hash array mapped trie algorithm.
+
+## Usage
+
+```
+let empty: Map[String,U32] = Maps.empty[String,U32]() // {}
+// Update returns a new map with the provided key set
+// to the provided value. The old map is unchanged.
+let m2 = m1.update("a", 5) // {a: 5}
+let m3 = m2.update("b", 10) // {a: 5, b: 10}
+let m4 = m3.remove("a") // {b: 10}
+
+// You can create a new map from key value pairs.
+let map = Maps.from[String,U32]([("a", 2), ("b", 3)]) // {a: 2, b: 3}
+```
+"""
 
 primitive Maps
   fun val empty[K: (Hashable val & Equatable[K] val), V](): Map[K, V] =>

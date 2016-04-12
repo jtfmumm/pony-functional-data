@@ -1,4 +1,32 @@
 type List[A] is (Cons[A] | Nil[A])
+"""
+A persistent list with functional transformations.
+
+## Usage
+
+```
+let l1 = Lists[U32]([2, 4, 6, 8]) // List(2, 4, 6, 8)
+
+let empty = Lists[U32].empty() // List()
+
+// prepend() returns a new List, leaving the
+// old list unchanged
+let l2 = empty.prepend(3) // List(3)
+let l3 = l2.prepend(2) // List(2, 3)
+let l4 = l3.prepend(1) // List(1, 2, 3)
+let l4_head = l4.head() // 1
+let l4_tail = l4.tail() // List(2, 3)
+
+h.assert_eq[U32](l4_head, 1)
+h.assert_true(Lists[U32].eq(l4, Lists[U32]([1, 2, 3])))
+h.assert_true(Lists[U32].eq(l4_tail, Lists[U32]([2, 3])))
+
+let doubled = l4.map[U32](lambda(x: U32): U32 => x * 2 end)
+
+h.assert_true(Lists[U32].eq(doubled, Lists[U32]([2, 4, 6])))
+
+```
+"""
 
 primitive Lists[A]
   """
@@ -319,7 +347,9 @@ class val Cons[A]
     end
 
   fun tag _rev_prepend[B](l: List[B], target: List[B]): List[B] =>
-    // Prepends l in reverse order onto target
+    """
+    Prepends l in reverse order onto target
+    """
     match l
     | let cns: Cons[B] =>
       _rev_prepend[B](cns.tail(), target.prepend(cns.head()))
@@ -346,9 +376,15 @@ class val Cons[A]
 //    end
 
   fun val for_each(f: {(val->A)} box) =>
+    """
+    Applies the supplied function to every element of the list in order.
+    """
     _for_each(this, f)
 
   fun _for_each(l: List[A], f: {(val->A)} box) =>
+    """
+    Private helper for for_each, recursively working on elements.
+    """
     match l
     | let cons: Cons[A] =>
       f(cons.head())
