@@ -7,9 +7,16 @@ interface Hashable
 type Map[K: (Hashable val & Equatable[K] val), V] is (LeafNode[K, V] | MultiLeafNode[K, V] | MapNode[K, V])
 
 primitive Maps
-  fun val empty[K: (Hashable val & Equatable[K] val), V](): Map[K, V] => MapNode[K, V].empty()
+  fun val empty[K: (Hashable val & Equatable[K] val), V](): Map[K, V] =>
+    """
+    Return an empty map.
+    """
+    MapNode[K, V].empty()
 
   fun val from[K: (Hashable val & Equatable[K] val), V](pairs: Array[(K, val->V)]): Map[K, V] ? =>
+    """
+    Return a map containing the provided key-value pairs.
+    """
     var newMap = empty[K, V]()
     for pair in pairs.values() do
       (let k, let v) = pair
@@ -17,7 +24,11 @@ primitive Maps
     end
     newMap
 
-  fun _last_level(): U32 => 4
+  fun _last_level(): U32 =>
+    """
+    The maximum depth of the tree used for the map (counting from zero)
+    """
+    4
 
 class val LeafNode[K: (Hashable val & Equatable[K] val), V]
   let _key: K
@@ -27,17 +38,34 @@ class val LeafNode[K: (Hashable val & Equatable[K] val), V]
     _key = k
     _value = v
 
-  fun size(): U64 => 1
+  fun size(): U64 =>
+    """
+    Return the size of the node.
+    """
+    1
 
-  fun _is_leaf(): Bool => true
+  fun _is_leaf(): Bool =>
+    """
+    Predicate testing if the node is a leaf.
+    """
+    true
 
   fun apply(k: K): val->V ? =>
+    """
+    Attempt to get the value corresponding to k.
+    """
     if k == _key then _value else error end
 
   fun _getWithHash(k: K, hash: U32, level: U32): val->V ? =>
+    """
+    Attempt to get the value corresponding to k, using hash and level.
+    """
     apply(k)
 
   fun update(k: K, v: val->V): Map[K, V] ? =>
+    """
+    Update the value associated with the provided key.
+    """
     if k == _key then
       LeafNode[K, V](k, v) as Map[K, V]
     else
@@ -46,6 +74,9 @@ class val LeafNode[K: (Hashable val & Equatable[K] val), V]
     end
 
   fun _putWithHash(k: K, v: val->V, hash: U32, level: U32): Map[K, V] ? =>
+    """
+    Update the value associated with the provided key, using hash and level.
+    """
     if k == _key then
       LeafNode[K, V](k, v) as Map[K, V]
     else
@@ -53,11 +84,23 @@ class val LeafNode[K: (Hashable val & Equatable[K] val), V]
       mapNode._putWithHash(k, v, hash, level)
     end
 
-  fun remove(k: K): Map[K, V] ? => error
+  fun remove(k: K): Map[K, V] ? =>
+    """
+    Try to remove the provided key from the node.
+    """
+    error
 
-  fun _removeWithHash(k: K, hash: U32, level: U32): Map[K, V] ? => error
+  fun _removeWithHash(k: K, hash: U32, level: U32): Map[K, V] ? =>
+    """
+    Try to remove the prodied key form the node, using hash and level.
+    """
+    error
 
   fun getOrElse(k: K, alt: val->V): val->V =>
+    """
+    Get the value associated with provided key if present. Otherwise,
+    return the provided alternate value.
+    """
     try
       apply(k)
     else
@@ -65,6 +108,9 @@ class val LeafNode[K: (Hashable val & Equatable[K] val), V]
     end
 
   fun contains(k: K): Bool =>
+    """
+    Check whether the node contains the provided key.
+    """
     try
       apply(k)
       true
@@ -87,13 +133,27 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val), V]
     _entries = Lists[Entry[K, V]].empty()
 
   new val from(es: List[Entry[K, V]]) =>
+    """
+    Create a new MultiLeafNode from the provided list of entries.
+    """
     _entries = es
 
-  fun size(): U64 => _entries.size()
+  fun size(): U64 =>
+    """
+    Return the size of the node.
+    """
+    _entries.size()
 
-  fun _is_leaf(): Bool => true
+  fun _is_leaf(): Bool =>
+    """
+    Predicate testing if the node is a leaf.
+    """
+    true
 
   fun apply(k: K): val->V ? =>
+    """
+    Attempt to get the value corresponding to k.
+    """
     try
       var cur = _entries
       while(cur.is_non_empty()) do
@@ -106,9 +166,16 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val), V]
       error
     end
 
-  fun _getWithHash(k: K, hash: U32, level: U32): val->V ? => apply(k)
+  fun _getWithHash(k: K, hash: U32, level: U32): val->V ? =>
+    """
+    Attempt to get the value corresponding to k, using hash and level.
+    """
+    apply(k)
 
   fun update(k: K, v: val->V): Map[K, V] =>
+    """
+    Update the value associated with the provided key.
+    """
     let test =
       object
         let key: K = k
@@ -122,9 +189,16 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val), V]
       MultiLeafNode[K, V].from(newEntries)
     end
 
-  fun _putWithHash(k: K, v: val->V, hash: U32, level: U32): Map[K, V] => update(k, v)
+  fun _putWithHash(k: K, v: val->V, hash: U32, level: U32): Map[K, V] =>
+    """
+    Update the value associated with the provided key, using hash and level.
+    """
+    update(k, v)
 
   fun _updateEntry(k: K, v: val->V, es: List[Entry[K, V]], acc: List[Entry[K, V]]): Map[K, V] =>
+    """
+    Return a new MultiLeafNode with the entry corresponding to k updated.
+    """
     try
       let next = es.head()
       if next.key == k then
@@ -139,6 +213,9 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val), V]
     end
 
   fun _removeEntry(k: K, es: List[Entry[K, V]], acc: List[Entry[K, V]]): Map[K, V] =>
+    """
+    Return a new MultiLeafNode with the entry corresponding to k removed.
+    """
     try
       let next = es.head()
       if next.key == k then
@@ -151,11 +228,23 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val), V]
       MultiLeafNode[K, V].from(acc)
     end
 
-  fun remove(k: K): Map[K, V] => _removeEntry(k, _entries, Lists[Entry[K, V]].empty())
+  fun remove(k: K): Map[K, V] =>
+    """
+    Try to remove the provided key from the node.
+    """
+    _removeEntry(k, _entries, Lists[Entry[K, V]].empty())
 
-  fun _removeWithHash(k: K, hash: U32, level: U32): Map[K, V] => remove(k)
+  fun _removeWithHash(k: K, hash: U32, level: U32): Map[K, V] =>
+    """
+    Try to remove the prodied key form the node, using hash and level.
+    """
+    remove(k)
 
   fun getOrElse(k: K, alt: val->V): val->V =>
+    """
+    Get the value associated with provided key if present. Otherwise,
+    return the provided alternate value.
+    """
     try
       apply(k)
     else
@@ -163,6 +252,9 @@ class val MultiLeafNode[K: (Hashable val & Equatable[K] val), V]
     end
 
   fun contains(k: K): Bool =>
+    """
+    Check whether the node contains the provided key.
+    """
     try
       apply(k)
       true
@@ -186,16 +278,30 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     _pointers = recover val Array[Map[K, V]] end
     _size = 0
 
-  fun size(): U64 => _size
+  fun size(): U64 =>
+    """
+    Return the size of the node.
+    """
+    _size
 
-  fun _is_leaf(): Bool => false
+  fun _is_leaf(): Bool =>
+    """
+    Predicate testing if the node is a leaf.
+    """
+    false
 
   fun apply(k: K): val->V ? =>
+    """
+    Attempt to get the value corresponding to k.
+    """
     let hash = MapHelpers._hash[K](k)
     let level: U32 = 0
     _getWithHash(k, hash, level)
 
   fun _getWithHash(k: K, hash: U32, level: U32): val->V ? =>
+    """
+    Attempt to get the value corresponding to k, using hash and level.
+    """
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
     if _BitOps.checkIdxBit(_bitmap, bmapIdx) then
       let arrayIdx = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
@@ -205,11 +311,17 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     end
 
   fun update(k: K, v: val->V): Map[K, V] ? =>
+    """
+    Update the value associated with the provided key.
+    """
     let hash = MapHelpers._hash[K](k)
     let level: U32 = 0
     _putWithHash(k, v, hash, level)
 
   fun _putWithHash(k: K, v: val->V, hash: U32, level: U32): Map[K, V] ? =>
+    """
+    Update the value associated with the provided key, using hash and level.
+    """
     if (level >= Maps._last_level()) then return _lastLevelPutWithHash(k, v, hash) end
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
     let arrayIdx: USize = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
@@ -225,6 +337,10 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     end
 
   fun _lastLevelPutWithHash(k: K, v: val->V, hash: U32): Map[K, V] ? =>
+    """
+    Update the value associated with the provided key, using the hash on
+    the last level.
+    """
     let bmapIdx = _BitOps.bitmapIdxFor(hash, Maps._last_level())
     let arrayIdx: USize = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
     if _BitOps.checkIdxBit(_bitmap, bmapIdx) then
@@ -239,6 +355,10 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     end
 
   fun _insertInArrayAt(arr: Array[Map[K, V]] val, node: Map[K, V], idx: USize): Array[Map[K, V]] val ? =>
+    """
+    Return a new array with the provided node inserted at provided index, shifting the
+    old values at and above the index up one.
+    """
     var belowArr: USize = 0
     var aboveArr = idx
     let newArray: Array[Map[K, V]] trn = recover trn Array[Map[K, V]] end
@@ -254,6 +374,9 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     newArray
 
   fun _overwriteInArrayAt(arr: Array[Map[K, V]] val, node: Map[K, V], idx: USize): Array[Map[K, V]] val ? =>
+    """
+    Return a new array with the provided node inserted at provided index.
+    """
     var belowArr: USize = 0
     var aboveArr = idx + 1
     let newArray: Array[Map[K, V]] trn = recover trn Array[Map[K, V]] end
@@ -269,6 +392,10 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     newArray
 
   fun _removeInArrayAt(arr: Array[Map[K, V]] val, idx: USize): Array[Map[K, V]] val ? =>
+    """
+    Return a new array with the value at the provided index removed and values above the index
+    shifted down one.
+    """
     var belowArr: USize = 0
     var aboveArr = idx + 1
     let newArray: Array[Map[K, V]] trn = recover trn Array[Map[K, V]] end
@@ -283,9 +410,15 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     newArray
 
   fun remove(k: K): Map[K, V] ? =>
+    """
+    Try to remove the provided key from the node.
+    """
     if contains(k) then _removeWithHash(k, MapHelpers._hash[K](k), 0) else this as Map[K, V] end
 
   fun _removeWithHash(k: K, hash: U32, level: U32): Map[K, V] ? =>
+    """
+    Try to remove the prodied key form the node, using hash and level.
+    """
     let bmapIdx = _BitOps.bitmapIdxFor(hash, level)
     let arrayIdx: USize = _BitOps.arrayIdxFor(_bitmap, bmapIdx)
     if level >= Maps._last_level() then
@@ -305,6 +438,10 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     end
 
   fun getOrElse(k: K, alt: val->V): val->V =>
+    """
+    Get the value associated with provided key if present. Otherwise,
+    return the provided alternate value.
+    """
     try
       apply(k)
     else
@@ -312,6 +449,9 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     end
 
   fun contains(k: K): Bool =>
+    """
+    Check whether the node contains the provided key.
+    """
     try
       apply(k)
       true
@@ -321,28 +461,60 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
 
 // For 32-bit operations
 primitive _BitOps
-  fun maskLow(n: U32): U32 => n and 0x1F
+  fun maskLow(n: U32): U32 =>
+    """
+    Mask the low five bits
+    """
+    n and 0x1F
 
-  fun bitmapIdxFor(hash: U32, level: U32): U32 => maskLow(hash >> (level * 5))
+  fun bitmapIdxFor(hash: U32, level: U32): U32 =>
+    """
+    Calculate the bitmap index from the next five bits of the hash
+    """
+    maskLow(hash >> (level * 5))
 
   fun checkIdxBit(bmap: U32, idx: U32): Bool =>
+    """
+    Check the bit corresponding to the provided index
+    """
     let bit = (bmap >> idx) and 1
     if bit == 0 then false else true end
 
   fun arrayIdxFor(bmap: U32, idx: U32): USize =>
-   let mask = not(0xFFFF_FFFF << idx)
+    """
+    Check the array index for the map node corresponding to
+    the provided bitmap index. Since the pointers array only includes
+    map nodes that are present, we use the popcount of the bits
+    below the bitmap index.
+    """
+    let mask = not(0xFFFF_FFFF << idx)
     ((mask and bmap).popcount()).usize()
 
-  fun flipIndexedBitOn(bmap: U32, idx: U32): U32 => (1 << idx) or bmap
+  fun flipIndexedBitOn(bmap: U32, idx: U32): U32 =>
+    """
+    Return a new bitmap with the index bit set to 1.
+    """
+    (1 << idx) or bmap
 
-  fun flipIndexedBitOff(bmap: U32, idx: U32): U32 => not(1 << idx) and bmap
+  fun flipIndexedBitOff(bmap: U32, idx: U32): U32 =>
+    """
+    Return a new bitmap with the index bit set to 0.
+    """
+    not(1 << idx) and bmap
 
 primitive MapHelpers
   fun sumArraySizes[K: (Hashable val & Equatable[K] val), V](arr: Array[Map[K, V]] val): U64 =>
+    """
+    Sum the sizes of all maps in the provided array.
+    """
     var sum: U64 = 0
     for m in arr.values() do
       sum = sum + m.size()
     end
     sum
 
-  fun _hash[K: Hashable val](k: K): U32 => k.hash().u32()
+  fun _hash[K: Hashable val](k: K): U32 =>
+    """
+    Return a 32-bit hash of the key.
+    """
+    k.hash().u32()
