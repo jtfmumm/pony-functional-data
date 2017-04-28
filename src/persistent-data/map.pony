@@ -1,3 +1,5 @@
+use mut = "collections"
+
 interface Hashable
   """
   Anything with a hash method is hashable.
@@ -475,6 +477,38 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     else
       false
     end
+
+//   fun val keys(): MapKeys[K, V] => MapKeys[K, V](this)
+
+//   fun val values(): MapValues[K, V] => MapValues[K, V](this)
+
+//   fun val pairs(): MapPairs[K, V] => MapPairs[K, V](this)
+
+// class MapKeys[K: (Hashable val & Equatable[K] val), V]
+//   embed _pairs: MapPairs[K, V]
+
+//   new create(m: Map[K, V]) => _pairs = MapPairs[K, V](m)
+
+//   fun has_next(): Bool => _pairs.has_next()
+
+//   fun ref next(): K ? => _pairs.next()._1
+
+// class MapValues[K: (Hashable val & Equatable[K] val), V]
+//   embed _pairs: MapPairs[K, V]
+
+//   new create(m: Map[K, V]) => _pairs = MapPairs[K, V](m)
+
+//   fun has_next(): Bool => _pairs.has_next()
+
+//   fun ref next(): val->V ? => _pairs.next()._2
+
+// class MapPairs[K: (Hashable val & Equatable[K] val), V]
+
+//   new create(m: Map[K, V]) =>
+
+//   fun has_next(): Bool => _i < _size
+
+//   fun ref next(): (K, val->V) ? =>
 
 // For 32-bit operations
 primitive _BitOps
