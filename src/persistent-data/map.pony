@@ -426,7 +426,7 @@ class val MapNode[K: (Hashable val & Equatable[K] val), V]
     end
     newArray
 
-  fun remove(k: K): Map[K, V] ? =>
+  fun val remove(k: K): Map[K, V] ? =>
     """
     Try to remove the provided key from the node.
     """

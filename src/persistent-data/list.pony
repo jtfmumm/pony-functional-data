@@ -136,6 +136,8 @@ primitive Nil[A]
     """
     l
 
+  fun add(l: List[A]): List[A] => l
+
   fun map[B](f: {(val->A): val->B} box): Nil[B] =>
     """
     Mapping a function from A to B over the empty list yields the
@@ -302,6 +304,8 @@ class val Cons[A]
     list.
     """
     _concat(l, this.reverse())
+
+  fun val add(l: List[A]): List[A] => concat(l)
 
   fun val _concat(l: List[A], acc: List[A]): List[A] =>
     """
